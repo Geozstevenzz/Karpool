@@ -1,11 +1,12 @@
-// screens/driver-details.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
+import { useUserMode } from '../store/userModeStore'; // Import useUserMode
 
 export default function DriverDetails() {
   const router = useRouter();
+  const setMode = useUserMode((state) => state.setMode); // Access setMode function
 
   const [car, setCar] = useState('');
   const [color, setColor] = useState('');
@@ -15,7 +16,12 @@ export default function DriverDetails() {
 
   const handleSubmit = () => {
     console.log('Driver Details Submitted:', { car, color, modelYear, licenseNumber, mileage });
-    router.push('/passenger-home'); // Navigate to passenger-home.tsx
+    
+    // Set mode to "driver" before navigating
+    setMode('driver');
+
+    // Navigate to passenger-home
+    router.push('/passenger-home');
   };
 
   return (
@@ -139,7 +145,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 17,
-    marginBottom: 175
+    marginBottom: 175,
   },
   buttonText: {
     fontFamily: 'Manrope-SemiBold',

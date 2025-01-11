@@ -1,11 +1,12 @@
-// screens/driver-or-passenger.tsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useUserMode } from '../store/userModeStore'; // Import the userMode store
 
 export default function DriverOrPassenger() {
   const router = useRouter();
+  const setMode = useUserMode((state) => state.setMode); // Access the setMode function
 
   return (
     <View style={styles.container}>
@@ -22,7 +23,10 @@ export default function DriverOrPassenger() {
       {/* Passenger Box */}
       <TouchableOpacity
         style={styles.box}
-        onPress={() => router.push('/passenger-home')}
+        onPress={() => {
+          setMode('passenger'); // Set mode to "passenger"
+          router.push('/passenger-home'); // Navigate to passenger-home
+        }}
       >
         <Image
           source={require('@/assets/images/passenger.png')}
@@ -34,7 +38,10 @@ export default function DriverOrPassenger() {
       {/* Driver Box */}
       <TouchableOpacity
         style={styles.box}
-        onPress={() => router.push('/driver-details')}
+        onPress={() => {
+          setMode('driver'); // Set mode to "driver"
+          router.push('/driver-details'); // Navigate to driver-details
+        }}
       >
         <Image
           source={require('@/assets/images/steering-wheel.png')}
