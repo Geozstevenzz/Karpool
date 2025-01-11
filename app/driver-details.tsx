@@ -15,7 +15,7 @@ export default function DriverDetails() {
 
   const handleSubmit = () => {
     console.log('Driver Details Submitted:', { car, color, modelYear, licenseNumber, mileage });
-    router.push('/index1'); // Navigate to passenger-home.tsx
+    router.push('/passenger-home'); // Navigate to passenger-home.tsx
   };
 
   return (

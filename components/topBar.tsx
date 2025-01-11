@@ -11,10 +11,10 @@ const TopBar: React.FC = () => {
   const toggleMode = () => {
     if (mode === 'driver') {
       setMode('passenger');
-      router.push('/home-screen'); // Navigate to home-screen.tsx
+      
     } else {
       setMode('driver');
-      router.push('/index1'); // Navigate to index.tsx
+      
     }
   };
 

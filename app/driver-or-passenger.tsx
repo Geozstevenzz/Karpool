@@ -22,7 +22,7 @@ export default function DriverOrPassenger() {
       {/* Passenger Box */}
       <TouchableOpacity
         style={styles.box}
-        onPress={() => router.push('/index1')}
+        onPress={() => router.push('/passenger-home')}
       >
         <Image
           source={require('@/assets/images/passenger.png')}

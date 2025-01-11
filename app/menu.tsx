@@ -11,7 +11,7 @@ const MenuScreen: React.FC = () => {
       {/* Back Button */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => router.push('/index1')}
+        onPress={() => router.push('/passenger-home')}
       >
         <Ionicons name="arrow-back" size={24} color="#007BFF" />
       </TouchableOpacity>
@@ -19,9 +19,9 @@ const MenuScreen: React.FC = () => {
       {/* Menu Options */}
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/contact-message')}
+        onPress={() => router.push('/contact-driver')}
       >
-        <Text style={styles.buttonText}>Contact Messages</Text>
+        <Text style={styles.buttonText}>Contact Driver</Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
