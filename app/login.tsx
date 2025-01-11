@@ -18,7 +18,7 @@ export default function Login() {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         {/* Back button */}
-        <TouchableOpacity onPress={() => router.push('/home')}>
+        <TouchableOpacity onPress={() => router.push('/index')}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
         <Text style={styles.header}>Hi, Welcome Back!</Text>
