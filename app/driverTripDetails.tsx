@@ -124,7 +124,7 @@ const HomeScreen: React.FC = () => {
           title={'Go!'}
           onPress={() => {
             handleSubmit();
-            router.push('/');
+            router.push('/passenger-home');
           }}
         />
       </View>
