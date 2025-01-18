@@ -21,7 +21,7 @@ export default function DriverDetails() {
     setMode('driver');
 
     // Navigate to passenger-home
-    router.push('/passenger-home');
+    router.push('/driver-and-passenger-home');
   };
 
   return (

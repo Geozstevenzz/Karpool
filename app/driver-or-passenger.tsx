@@ -25,7 +25,7 @@ export default function DriverOrPassenger() {
         style={styles.box}
         onPress={() => {
           setMode('passenger'); // Set mode to "passenger"
-          router.push('/passenger-home'); // Navigate to passenger-home
+          router.push('/driver-and-passenger-home'); // Navigate to passenger-home
         }}
       >
         <Image
