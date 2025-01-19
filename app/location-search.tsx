@@ -1,5 +1,17 @@
 import React, { useState } from 'react';
-import { View, TextInput, FlatList, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+
+import {
+
+  View,
+  TextInput,
+  FlatList,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+
+} from 'react-native';
+
 import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { useMapStore } from '@/store/mapStore';
@@ -18,7 +30,7 @@ const LocationSearchScreen: React.FC = () => {
 
   const searchLocation = async () => {
     if (!query.trim()) {
-      alert("Please enter a location to search!");
+      alert('Please enter a location to search!');
       return;
     }
 
@@ -30,8 +42,8 @@ const LocationSearchScreen: React.FC = () => {
       );
       setResults(response.data);
     } catch (error) {
-      console.error("Error fetching location:", error);
-      alert("Something went wrong while fetching the locations.");
+      console.error('Error fetching location:', error);
+      alert('Something went wrong while fetching the locations.');
     } finally {
       setLoading(false);
     }
@@ -45,10 +57,16 @@ const LocationSearchScreen: React.FC = () => {
     };
 
     if (choice === 0) {
-      setLocationMarker({ latitude: selectedLocation.latitude, longitude: selectedLocation.longitude });
+      setLocationMarker({
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+      });
       setLocationName(selectedLocation.name);
     } else if (choice === 1) {
-      setDestinationMarker({ latitude: selectedLocation.latitude, longitude: selectedLocation.longitude });
+      setDestinationMarker({
+        latitude: selectedLocation.latitude,
+        longitude: selectedLocation.longitude,
+      });
       setDestinationName(selectedLocation.name);
     }
 
@@ -96,10 +114,21 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#fff',
   },
-  button: { backgroundColor: '#007bff', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 15 },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   loader: { marginVertical: 10 },
-  resultItem: { backgroundColor: '#fff', padding: 15, marginBottom: 10, borderRadius: 10 },
+  resultItem: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
   resultName: { fontSize: 16, fontWeight: 'bold' },
   emptyText: { textAlign: 'center', fontSize: 16, color: 'grey' },
 });

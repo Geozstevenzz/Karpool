@@ -1,34 +1,43 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useMapStore } from '../store/mapStore'; // Import the map store
+import { useMapStore } from '../store/mapStore';
 
 const LocationPicker: React.FC = () => {
   const router = useRouter();
   const setChoice = useMapStore((state) => state.setChoice); // Access the setChoice function
+  const locationName = useMapStore((state) => state.locationName); // Access source location name
+  const destinationName = useMapStore((state) => state.destinationName); // Access destination location name
+
+  const defaultStartText = "Select Start Location";
+  const defaultDestinationText = "Select Destination";
 
   const onPressStart = () => {
     setChoice(0); // Set choice to 0 for start location
-    console.log("Navigating to Start Location Picker");
     router.push('/location-search?type=start');
   };
 
   const onPressDestination = () => {
     setChoice(1); // Set choice to 1 for destination
-    console.log("Navigating to Destination Picker");
     router.push('/location-search?type=destination');
   };
 
   return (
     <View style={styles.container}>
+      {/* Start Location */}
       <TouchableOpacity onPress={onPressStart} style={styles.pressable}>
         <Image source={require('../assets/images/My Location.png')} style={styles.icon} />
-        <Text style={styles.text}>Select Start Location</Text>
+        <Text style={styles.text} numberOfLines={1}>
+          {locationName !== defaultStartText && locationName ? locationName : defaultStartText}
+        </Text>
       </TouchableOpacity>
 
+      {/* Destination Location */}
       <TouchableOpacity onPress={onPressDestination} style={styles.pressable}>
         <Image source={require('../assets/images/Address.png')} style={styles.icon} />
-        <Text style={styles.text}>Select Destination</Text>
+        <Text style={styles.text} numberOfLines={1}>
+          {destinationName !== defaultDestinationText && destinationName ? destinationName : defaultDestinationText}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -54,24 +63,13 @@ const styles = StyleSheet.create({
     height: 20,
     marginRight: 15,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  modalContent: {
-    width: '80%',
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
   text: {
     fontSize: 16,
     fontWeight: '500',
+    flex: 1,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 });
-
 
 export default LocationPicker;
