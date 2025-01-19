@@ -74,7 +74,7 @@ export default function DatePickerComponent() {
     <View style={styles.container}>
       <TouchableOpacity onPress={() => setcalendarModalVisible(true)} style={styles.pressable}>
         <Image source={require('../assets/images/calendar.png')} style={styles.icon} />
-        <Text>Date</Text>
+        <Text style={styles.text}>Date</Text>
       </TouchableOpacity>
       <Modal
           visible={calendarModalVisible}
@@ -99,7 +99,7 @@ export default function DatePickerComponent() {
 
       <TouchableOpacity onPress={showTimePicker} style={styles.pressable}>
         <Image source={require('../assets/images/Clock.png')} style={styles.icon} />
-        <Text>Time</Text>
+        <Text style={styles.text}>Time</Text>
       </TouchableOpacity>
       <DateTimePickerModal
         isVisible={isTimePickerVisible}
@@ -118,31 +118,36 @@ const styles = StyleSheet.create({
   pressable: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'grey',
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 7,
-    backgroundColor: "#EDFAFF",
+    backgroundColor: '#EDFAFF',
     elevation: 5,
   },
   icon: {
     width: 20,
     height: 20,
-    marginRight: 15,
+    marginRight: 10,
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
-    width: "80%",
-    backgroundColor: "white",
+    width: '80%',
+    backgroundColor: 'white',
     padding: 20,
     borderRadius: 10,
-    alignItems: "center",
-  },
+    alignItems: 'center',
 
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '500',
+  }
 });
+

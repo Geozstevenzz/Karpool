@@ -41,10 +41,10 @@ const styles = StyleSheet.create({
   pressable: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: 'grey',
-    borderRadius: 10,
+    borderRadius: 5,
     marginBottom: 7,
     backgroundColor: '#EDFAFF',
     elevation: 5,
@@ -52,12 +52,26 @@ const styles = StyleSheet.create({
   icon: {
     width: 20,
     height: 20,
-    marginRight: 10,
+    marginRight: 15,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
   },
   text: {
     fontSize: 16,
     fontWeight: '500',
   },
 });
+
 
 export default LocationPicker;
