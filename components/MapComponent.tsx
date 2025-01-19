@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
-import { View, StyleSheet} from "react-native";
-import MapView, { LatLng, Marker } from "react-native-maps";
-import {useMapStore} from '../store/mapStore'
+import React, { useRef, useEffect } from "react";
+import { View, StyleSheet } from "react-native";
+import MapView, { Marker, Polyline } from "react-native-maps";
+import { useMapStore } from "../store/mapStore";
 
 const mapStyle= [
   {
@@ -238,7 +238,6 @@ const mapStyle= [
 ]
 
 
-
 const MapComponent = () => {
   const mapRef = useRef(null);
 
@@ -249,78 +248,90 @@ const MapComponent = () => {
   const setLocationMarker = useMapStore((state) => state.setLocationMarker);
   const setDestinationMarker = useMapStore((state) => state.setDestinationMarker);
 
-  // // 0 means current location, 1 means destination
-  // const [choice, setChoice] = useState(0);
-  
-  // const [locationMarker, setLocationMarker] = useState({
-  //   latitude: 24.8607,
-  //   longitude: 67.0011,
-  // });
+  const fitMarkers = () => {
+    if (locationMarker && destinationMarker) {
+      console.log("Fitting Markers:", locationMarker, destinationMarker);
+      mapRef.current.fitToCoordinates(
+        [locationMarker, destinationMarker],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        }
+      );
+    }
+  };
 
-  // const [destinationMarker, setDestinationMarker] = useState({
-  //   latitude: 24.8607,
-  //   longitude: 67.1011,
-  // });
+  useEffect(() => {
+    console.log("Markers Updated:");
+    console.log("Location Marker:", locationMarker);
+    console.log("Destination Marker:", destinationMarker);
+    fitMarkers();
+  }, [locationMarker, destinationMarker]);
 
-  // const goToLocationMarker = () => {
-
-  //   mapRef.current.animateToRegion({
-  //     latitude: locationMarker.latitude,
-  //     longitude: locationMarker.longitude,
-  //     latitudeDelta: 0.02,
-  //     longitudeDelta: 0.02,
-  //   }, 1 * 1000);
-  // };
-  
-  // const goToDestinationMarker = () => {
-  //   mapRef.current.animateToRegion({
-  //     latitude: destinationMarker.latitude,
-  //     longitude: destinationMarker.longitude,
-  //     latitudeDelta: 0.02,
-  //     longitudeDelta: 0.02,
-  //   }, 1 * 1000);
-  // };
-
-  
+  useEffect(() => {
+    console.log("Choice Changed to:", choice); // Log when `choice` changes
+  }, [choice]);
 
   return (
     <View style={styles.container}>
       <MapView
         ref={mapRef}
         style={styles.map}
-
+        customMapStyle={mapStyle}
         initialRegion={{
           latitude: 24.8607,
-          longitude: 67.0011,
+          longitude: 67.1011,
           latitudeDelta: 0.0922,
           longitudeDelta: 0.0421,
         }}
-        //customMapStyle={mapStyle}
-
         onPress={(e) => {
-          if (choice == 1) {
-            setDestinationMarker(e.nativeEvent.coordinate)
-          }
-          else if (choice == 0) {
-            setLocationMarker(e.nativeEvent.coordinate)
+          const coords = e.nativeEvent.coordinate;
+          console.log("Map Pressed at:", coords, "Choice:", choice);
+
+          if (choice === 1) {
+            console.log("Setting Destination Marker:", coords);
+            setDestinationMarker(coords);
+          } else if (choice === 0) {
+            console.log("Setting Location Marker:", coords);
+            setLocationMarker(coords);
           }
         }}
       >
-        <Marker 
+        <Marker
+          coordinate={locationMarker}
+          title="Your Location"
+          description="Start point"
           draggable
-          coordinate={locationMarker} 
-          onDragEnd={e => {setLocationMarker(e.nativeEvent.coordinate)}}
+          onDragEnd={(e) => {
+            const coords = e.nativeEvent.coordinate;
+            console.log("Location Marker Dragged to:", coords);
+            setLocationMarker(coords);
+          }}
           image={require("../assets/images/LocationPinEdited.png")}
-          anchor = {{x: 0.5, y: 1}}
+          anchor={{ x: 0.5, y: 1 }}
         />
 
-        <Marker 
+        <Marker
+          coordinate={destinationMarker}
+          title="Destination"
+          description="End point"
           draggable
-          coordinate={destinationMarker} 
-          onDragEnd={e => {setDestinationMarker(e.nativeEvent.coordinate)}}
+          onDragEnd={(e) => {
+            const coords = e.nativeEvent.coordinate;
+            console.log("Destination Marker Dragged to:", coords);
+            setDestinationMarker(coords);
+          }}
           image={require("../assets/images/DestinationPinEdited.png")}
-          anchor = {{x: 0.5, y: 1}}
+          anchor={{ x: 0.5, y: 1 }}
         />
+
+        {locationMarker.latitude && destinationMarker.latitude && (
+          <Polyline
+            coordinates={[locationMarker, destinationMarker]}
+            strokeColor="#000080"
+            strokeWidth={4}
+          />
+        )}
       </MapView>
     </View>
   );
@@ -329,12 +340,10 @@ const MapComponent = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    
   },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
-  
 });
 
 export default MapComponent;

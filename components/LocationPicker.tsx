@@ -1,29 +1,34 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
-import { useMapStore } from '../store/mapStore'
-
+import { useRouter } from 'expo-router';
+import { useMapStore } from '../store/mapStore'; // Import the map store
 
 const LocationPicker: React.FC = () => {
-
-  const setChoice = useMapStore((state) => state.setChoice);
+  const router = useRouter();
+  const setChoice = useMapStore((state) => state.setChoice); // Access the setChoice function
 
   const onPressStart = () => {
-    setChoice(0);
-  }
+    setChoice(0); // Set choice to 0 for start location
+    console.log("Navigating to Start Location Picker");
+    router.push('/location-search?type=start');
+  };
+
   const onPressDestination = () => {
-    setChoice(1);
-  }
+    setChoice(1); // Set choice to 1 for destination
+    console.log("Navigating to Destination Picker");
+    router.push('/location-search?type=destination');
+  };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onPressStart} style={styles.pressable}>
         <Image source={require('../assets/images/My Location.png')} style={styles.icon} />
-        <Text>Select Start Location</Text>
+        <Text style={styles.text}>Select Start Location</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={onPressDestination} style={styles.pressable}>
         <Image source={require('../assets/images/Address.png')} style={styles.icon} />
-        <Text>Select Destination</Text>
+        <Text style={styles.text}>Select Destination</Text>
       </TouchableOpacity>
     </View>
   );
@@ -36,18 +41,22 @@ const styles = StyleSheet.create({
   pressable: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'grey',
-    borderRadius: 5,
+    borderRadius: 10,
     marginBottom: 7,
-    backgroundColor: "#EDFAFF",
+    backgroundColor: '#EDFAFF',
     elevation: 5,
   },
   icon: {
     width: 20,
     height: 20,
     marginRight: 10,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 
