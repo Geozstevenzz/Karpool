@@ -239,38 +239,43 @@ const mapStyle= [
 
 
 const MapComponent = () => {
-  const mapRef = useRef(null);
+  const mapRef = useRef<MapView>(null);
 
+  // State from the store
   const locationMarker = useMapStore((state) => state.locationMarker);
   const destinationMarker = useMapStore((state) => state.destinationMarker);
   const choice = useMapStore((state) => state.choice);
+  const fitToMarkers = useMapStore((state) => state.fitToMarkers);
 
+  // Actions from the store
   const setLocationMarker = useMapStore((state) => state.setLocationMarker);
   const setDestinationMarker = useMapStore((state) => state.setDestinationMarker);
+  const toggleFitToMarkers = useMapStore((state) => state.toggleFitToMarkers);
 
+  // Fit Markers Above the Box
   const fitMarkers = () => {
-    if (locationMarker && destinationMarker) {
-      console.log("Fitting Markers:", locationMarker, destinationMarker);
-      mapRef.current.fitToCoordinates(
-        [locationMarker, destinationMarker],
-        {
-          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
-          animated: true,
-        }
-      );
+    if (mapRef.current && locationMarker && destinationMarker) {
+      console.log("Fitting markers...");
+      mapRef.current.fitToCoordinates([locationMarker, destinationMarker], {
+        edgePadding: { top: 50, right: 50, bottom: 300, left: 50 }, // Adjust padding for UI overlap
+        animated: true,
+      });
     }
   };
 
+  // Effect to re-center markers dynamically
   useEffect(() => {
-    console.log("Markers Updated:");
-    console.log("Location Marker:", locationMarker);
-    console.log("Destination Marker:", destinationMarker);
-    fitMarkers();
-  }, [locationMarker, destinationMarker]);
+    if (fitToMarkers) {
+      fitMarkers();
+      toggleFitToMarkers(false); // Reset flag after fitting
+    }
+  }, [fitToMarkers]);
 
+  // Effect to log marker updates
   useEffect(() => {
-    console.log("Choice Changed to:", choice); // Log when `choice` changes
-  }, [choice]);
+    console.log("Location Marker Updated:", locationMarker);
+    console.log("Destination Marker Updated:", destinationMarker);
+  }, [locationMarker, destinationMarker]);
 
   return (
     <View style={styles.container}>
@@ -291,12 +296,13 @@ const MapComponent = () => {
           if (choice === 1) {
             console.log("Setting Destination Marker:", coords);
             setDestinationMarker(coords);
-          } else if (choice === 0) {
+          } else {
             console.log("Setting Location Marker:", coords);
             setLocationMarker(coords);
           }
         }}
       >
+        {/* Location Marker */}
         <Marker
           coordinate={locationMarker}
           title="Your Location"
@@ -311,6 +317,7 @@ const MapComponent = () => {
           anchor={{ x: 0.5, y: 1 }}
         />
 
+        {/* Destination Marker */}
         <Marker
           coordinate={destinationMarker}
           title="Destination"
@@ -325,13 +332,15 @@ const MapComponent = () => {
           anchor={{ x: 0.5, y: 1 }}
         />
 
-        {locationMarker.latitude && destinationMarker.latitude && (
-          <Polyline
-            coordinates={[locationMarker, destinationMarker]}
-            strokeColor="#000080"
-            strokeWidth={4}
-          />
-        )}
+        {/* Polyline (Path) */}
+        {locationMarker.latitude &&
+          destinationMarker.latitude && (
+            <Polyline
+              coordinates={[locationMarker, destinationMarker]}
+              strokeColor="#000080" // Navy Blue
+              strokeWidth={4}
+            />
+          )}
       </MapView>
     </View>
   );
