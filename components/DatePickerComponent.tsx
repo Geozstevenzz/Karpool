@@ -18,8 +18,8 @@ export default function DatePickerComponent() {
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState<string>("Date"); // Default text for date
-  const [selectedTime, setSelectedTime] = useState<string>("Time"); // Default text for time
+  const [selectedDates, setSelectedDates] = useState<string[]>([]); // Store multiple dates
+  const [selectedTime, setSelectedTime] = useState<string>("Select Time"); // Default text for time
 
   const showTimePicker = () => {
     setTimePickerVisibility(true);
@@ -48,10 +48,11 @@ export default function DatePickerComponent() {
     if (dates[selectedDate]) {
       delete newDates[selectedDate];
       setDates(newDates);
+      setSelectedDates(prevDates => prevDates.filter(date => date !== selectedDate)); // Remove date from selected
     } else {
       newDates[selectedDate] = { selected: true, color: 'red' };
       setDates(newDates);
-      setSelectedDate(selectedDate); // Update local state with selected date
+      setSelectedDates(prevDates => [...prevDates, selectedDate]); // Add date to selected
     }
   };
 
@@ -61,7 +62,7 @@ export default function DatePickerComponent() {
       <TouchableOpacity onPress={() => setCalendarModalVisible(true)} style={styles.pressable}>
         <Image source={require('../assets/images/calendar.png')} style={styles.icon} />
         <Text style={styles.text} numberOfLines={1}>
-          {selectedDate}
+          {selectedDates.length > 0 ? selectedDates.join(', ') : "Select Date(s)"}
         </Text>
       </TouchableOpacity>
 
