@@ -1,82 +1,121 @@
 import { create } from "zustand";
 import { LatLng } from "react-native-maps";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+type Bookmark = {
+  name: string;
+  coordinates: LatLng;
+};
 
 type MapComponentProps = {
   locationMarker: LatLng;
   destinationMarker: LatLng;
   locationName: string;
   destinationName: string;
-  choice: number; // 0: Location marker, 1: Destination marker
-  fitToMarkers: boolean; // New: Flag to track whether markers need fitting
+  choice: number;
+  fitToMarkers: boolean;
+  bookmarks: Bookmark[];
   setChoice: (choice: number) => void;
   setLocationMarker: (coordinates: LatLng) => void;
   setDestinationMarker: (coordinates: LatLng) => void;
   setLocationName: (name: string) => void;
   setDestinationName: (name: string) => void;
-  resetMarkers: () => void; // Reset markers to default values
-  toggleFitToMarkers: (status: boolean) => void; // New: Set fitToMarkers flag
+  resetMarkers: () => void;
+  toggleFitToMarkers: (status: boolean) => void;
+  addBookmark: (name: string, coordinates: LatLng) => void;
+  removeBookmark: (name: string) => void;
+  loadBookmarks: () => void;
+  clearBookmarks: () => void;
+  selectBookmark: (bookmark: Bookmark, type: "start" | "destination") => void;
 };
 
-export const useMapStore = create<MapComponentProps>((set) => ({
-  // Initial States
-  locationMarker: { latitude: 31.481757, longitude: 74.396959 }, // Default Start Location
-  destinationMarker: { latitude: 31.463119, longitude: 74.414223 }, // Default Destination
+export const useMapStore = create<MapComponentProps>((set, get) => ({
+  locationMarker: { latitude: 31.481757, longitude: 74.396959 },
+  destinationMarker: { latitude: 31.463119, longitude: 74.414223 },
   locationName: "Select Start Location",
   destinationName: "Select Destination",
-  choice: 0, // Default to setting start location
-  fitToMarkers: true, // Default: Automatically fit to markers on map load
+  choice: 0,
+  fitToMarkers: true,
+  bookmarks: [],
 
-  // Update Choice
-  setChoice: (choice) => {
-    console.log("Choice Updated to:", choice); // Log whenever choice is updated
-    set(() => ({ choice }));
-  },
-
-  // Update Location Marker
-  setLocationMarker: (coordinates) => {
-    console.log("Location Marker Updated:", coordinates); // Log updated location marker
-    set(() => ({
-      locationMarker: coordinates,
-      fitToMarkers: true, // Trigger re-centering
-    }));
-  },
-
-  // Update Destination Marker
-  setDestinationMarker: (coordinates) => {
-    console.log("Destination Marker Updated:", coordinates); // Log updated destination marker
-    set(() => ({
-      destinationMarker: coordinates,
-      fitToMarkers: true, // Trigger re-centering
-    }));
-  },
-
-  // Update Location Name
-  setLocationName: (name) => {
-    console.log("Location Name Updated:", name); // Log updated location name
-    set(() => ({ locationName: name }));
-  },
-
-  // Update Destination Name
-  setDestinationName: (name) => {
-    console.log("Destination Name Updated:", name); // Log updated destination name
-    set(() => ({ destinationName: name }));
-  },
-
-  // Reset Markers to Default State
-  resetMarkers: () => {
-    console.log("Resetting markers to default values");
+  setChoice: (choice) => set(() => ({ choice })),
+  
+  setLocationMarker: (coordinates) =>
+    set(() => ({ locationMarker: coordinates, fitToMarkers: true })),
+    
+  setDestinationMarker: (coordinates) =>
+    set(() => ({ destinationMarker: coordinates, fitToMarkers: true })),
+    
+  setLocationName: (name) => set(() => ({ locationName: name })),
+    
+  setDestinationName: (name) => set(() => ({ destinationName: name })),
+    
+  resetMarkers: () =>
     set(() => ({
       locationMarker: { latitude: 31.481757, longitude: 74.396959 },
       destinationMarker: { latitude: 31.463119, longitude: 74.414223 },
       locationName: "Select Start Location",
       destinationName: "Select Destination",
-      fitToMarkers: true, // Trigger re-centering
-    }));
+      fitToMarkers: true,
+    })),
+
+  toggleFitToMarkers: (status) => set(() => ({ fitToMarkers: status })),
+
+  addBookmark: async (name, coordinates) => {
+    const { bookmarks } = get();
+
+    // Prevent duplicate bookmarks
+    if (bookmarks.some((bookmark) => bookmark.name === name)) {
+      console.log("Bookmark already exists:", name);
+      return;
+    }
+
+    const updatedBookmarks = [...bookmarks, { name, coordinates }];
+    await AsyncStorage.setItem("bookmarks", JSON.stringify(updatedBookmarks));
+
+    set(() => ({ bookmarks: updatedBookmarks }));
+    console.log("Bookmark added:", name);
   },
 
-  // Toggle Fit-To-Markers Flag
-  toggleFitToMarkers: (status) => {
-    console.log("Fit-To-Markers flag set to:", status);
-    set(() => ({ fitToMarkers: status }));
+  removeBookmark: async (name) => {
+    const { bookmarks } = get();
+    const updatedBookmarks = bookmarks.filter(
+      (bookmark) => bookmark.name !== name
+    );
+
+    await AsyncStorage.setItem("bookmarks", JSON.stringify(updatedBookmarks));
+    set(() => ({ bookmarks: updatedBookmarks }));
+    console.log("Bookmark removed:", name);
+  },
+
+  loadBookmarks: async () => {
+    const storedBookmarks = await AsyncStorage.getItem("bookmarks");
+    if (storedBookmarks) {
+      set(() => ({ bookmarks: JSON.parse(storedBookmarks) }));
+      console.log("Bookmarks loaded from storage.");
+    }
+  },
+
+  clearBookmarks: async () => {
+    await AsyncStorage.removeItem("bookmarks");
+    set(() => ({ bookmarks: [] }));
+    console.log("All bookmarks cleared.");
+  },
+
+  // Select a bookmark to set it as the start or destination location
+  selectBookmark: (bookmark, type: "start" | "destination") => {
+    if (type === "start") {
+      set(() => ({
+        locationMarker: bookmark.coordinates,
+        locationName: bookmark.name,
+        choice: 0, // Start location chosen
+      }));
+    } else if (type === "destination") {
+      set(() => ({
+        destinationMarker: bookmark.coordinates,
+        destinationName: bookmark.name,
+        choice: 1, // Destination location chosen
+      }));
+    }
   },
 }));

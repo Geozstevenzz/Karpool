@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Modal, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMapStore } from '../store/mapStore';
 
 const LocationPicker: React.FC = () => {
   const router = useRouter();
   const setChoice = useMapStore((state) => state.setChoice); 
+  const setLocationMarker = useMapStore((state) => state.setLocationMarker);
+  const setDestinationMarker = useMapStore((state) => state.setDestinationMarker);
   const locationName = useMapStore((state) => state.locationName); 
   const destinationName = useMapStore((state) => state.destinationName); 
+  const bookmarks = useMapStore((state) => state.bookmarks); 
+  const selectBookmark = useMapStore((state) => state.selectBookmark); 
+  const toggleFitToMarkers = useMapStore((state) => state.toggleFitToMarkers); 
 
-  const [modalVisible, setModalVisible] = useState(false); // Control modal visibility
+  const [modalVisible, setModalVisible] = useState(false); 
   const [currentType, setCurrentType] = useState<"start" | "destination" | null>(null);
 
   const defaultStartText = "Select Start Location";
@@ -28,6 +33,20 @@ const LocationPicker: React.FC = () => {
 
   const onSelectOnMap = () => {
     setModalVisible(false);
+  };
+
+  const onSelectBookmark = (bookmark) => {
+    if (currentType === "start") {
+      setLocationMarker(bookmark.coordinates);
+      selectBookmark(bookmark, "start");
+    } else if (currentType === "destination") {
+      setDestinationMarker(bookmark.coordinates);
+      selectBookmark(bookmark, "destination");
+    }
+    
+    // Ensure the map adjusts to show both markers
+    toggleFitToMarkers(true); // Set the map to fit both markers after selection
+    setModalVisible(false); // Close modal after selecting bookmark
   };
 
   return (
@@ -64,6 +83,20 @@ const LocationPicker: React.FC = () => {
             <TouchableOpacity style={styles.modalButton} onPress={onSelectOnMap}>
               <Text style={styles.modalButtonText}>Select on Map</Text>
             </TouchableOpacity>
+
+            <Text style={styles.modalTitle}>Bookmarks</Text>
+            {/* Displaying Bookmarked Locations */}
+            <FlatList
+              data={bookmarks}
+              keyExtractor={(item) => item.name}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.bookmarkItem} onPress={() => onSelectBookmark(item)}>
+                  <Text style={styles.bookmarkText}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={<Text style={styles.emptyText}>No bookmarks available.</Text>}
+            />
+
             <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalVisible(false)}>
               <Text style={styles.modalCancelText}>Cancel</Text>
             </TouchableOpacity>
@@ -137,6 +170,19 @@ const styles = StyleSheet.create({
   modalCancelText: {
     color: 'red',
     fontSize: 16,
+  },
+  bookmarkItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  bookmarkText: {
+    fontSize: 16,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: 'gray',
+    textAlign: 'center',
   },
 });
 
