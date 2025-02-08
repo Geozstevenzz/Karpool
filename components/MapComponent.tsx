@@ -242,6 +242,8 @@ const MapComponent = () => {
   const mapRef = useRef<MapView>(null);
 
   // State from the store
+  const locationName = useMapStore((state) => state.locationName);
+  const destinationName = useMapStore((state) => state.destinationName);
   const locationMarker = useMapStore((state) => state.locationMarker);
   const destinationMarker = useMapStore((state) => state.destinationMarker);
   const choice = useMapStore((state) => state.choice);
@@ -250,6 +252,8 @@ const MapComponent = () => {
   // Actions from the store
   const setLocationMarker = useMapStore((state) => state.setLocationMarker);
   const setDestinationMarker = useMapStore((state) => state.setDestinationMarker);
+  const setLocationName = useMapStore((state) => state.setLocationName);
+  const setDestinationName = useMapStore((state) => state.setDestinationName);
   const toggleFitToMarkers = useMapStore((state) => state.toggleFitToMarkers);
 
   // Fit Markers Above the Box
@@ -296,9 +300,13 @@ const MapComponent = () => {
           if (choice === 1) {
             console.log("Setting Destination Marker:", coords);
             setDestinationMarker(coords);
+            const name = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
+            setDestinationName(name);
           } else {
             console.log("Setting Location Marker:", coords);
             setLocationMarker(coords);
+            const name = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
+            setLocationName(name);
           }
         }}
       >
@@ -312,6 +320,9 @@ const MapComponent = () => {
             const coords = e.nativeEvent.coordinate;
             console.log("Location Marker Dragged to:", coords);
             setLocationMarker(coords);
+            //TEST
+            const name = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
+            setLocationName(name);
           }}
           image={require("../assets/images/LocationPinEdited.png")}
           anchor={{ x: 0.5, y: 1 }}
@@ -327,6 +338,9 @@ const MapComponent = () => {
             const coords = e.nativeEvent.coordinate;
             console.log("Destination Marker Dragged to:", coords);
             setDestinationMarker(coords);
+            //TEST
+            const name = `${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`;
+            setDestinationName(name);
           }}
           image={require("../assets/images/DestinationPinEdited.png")}
           anchor={{ x: 0.5, y: 1 }}

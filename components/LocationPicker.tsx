@@ -55,7 +55,7 @@ const LocationPicker: React.FC = () => {
       <TouchableOpacity onPress={() => onPressLocation("start")} style={styles.pressable}>
         <Image source={require('../assets/images/My Location.png')} style={styles.icon} />
         <Text style={styles.text} numberOfLines={1}>
-          {locationName !== defaultStartText && locationName ? locationName : defaultStartText}
+          {locationName !== defaultStartText ? locationName : defaultStartText}
         </Text>
       </TouchableOpacity>
 
@@ -63,7 +63,7 @@ const LocationPicker: React.FC = () => {
       <TouchableOpacity onPress={() => onPressLocation("destination")} style={styles.pressable}>
         <Image source={require('../assets/images/Address.png')} style={styles.icon} />
         <Text style={styles.text} numberOfLines={1}>
-          {destinationName !== defaultDestinationText && destinationName ? destinationName : defaultDestinationText}
+          {destinationName !== defaultDestinationText ? destinationName : defaultDestinationText}
         </Text>
       </TouchableOpacity>
 
