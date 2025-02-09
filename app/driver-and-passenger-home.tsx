@@ -1,16 +1,20 @@
-import React from 'react';
-import { View, Text, StyleSheet, Alert, Button } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Alert, Button, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import LocationPicker from '../components/LocationPicker';
 import DateTimePicker from '../components/DatePickerComponent';
 import MapComponent from '../components/MapComponent';
 import TopBar from '../components/topBar';
+import Sidebar from '../components/Sidebar';
 import { useUserMode } from '../store/userModeStore';
 import { useMapStore } from '@/store/mapStore';
 import { useDateTimeStore } from '@/store/dateTImeStore';
 import { useTripStore } from '@/store/useTripStore';
 
 const DriverOrPassengerHome: React.FC = () => {
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const overlayOpacity = React.useRef(new Animated.Value(0)).current;
+  
   const router = useRouter();
   const currentMode = useUserMode((state) => state.mode);
   const locationMarker = useMapStore((state) => state.locationMarker);
@@ -27,7 +31,7 @@ const DriverOrPassengerHome: React.FC = () => {
 
       const combinedData = {
         time,
-        date: formattedDates[0], // Use the first date for now
+        date: formattedDates[0],
         locationMarker,
         destinationMarker,
       };
@@ -57,22 +61,52 @@ const DriverOrPassengerHome: React.FC = () => {
     }
   };
 
+  const toggleSidebar = (visible: boolean) => {
+    setIsSidebarVisible(visible);
+    Animated.timing(overlayOpacity, {
+      toValue: visible ? 0.5 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
     <View style={styles.container}>
-      <TopBar />
-      <MapComponent />
-
-      <View style={styles.bottomView}>
-        <Text style={styles.text}>
-          {currentMode === 'driver' ? 'Schedule a trip:' : 'Find a trip:'}
-        </Text>
-        <LocationPicker />
-        <DateTimePicker />
-        <Button
-          title={currentMode === 'driver' ? 'Next' : 'Go'}
-          onPress={() => (currentMode === 'driver' ? router.push('/driverTripDetails') : handleSubmit())}
-        />
+      <TopBar onMenuPress={() => toggleSidebar(true)} />
+      
+      {/* Main content */}
+      <View style={[styles.content, isSidebarVisible && styles.contentBlurred]} 
+            pointerEvents={isSidebarVisible ? 'none' : 'auto'}>
+        <MapComponent />
+        <View style={styles.bottomView}>
+          <Text style={styles.text}>
+            {currentMode === 'driver' ? 'Schedule a trip:' : 'Find a trip:'}
+          </Text>
+          <LocationPicker />
+          <DateTimePicker />
+          <Button
+            title={currentMode === 'driver' ? 'Next' : 'Go'}
+            onPress={() => (currentMode === 'driver' ? router.push('/driverTripDetails') : handleSubmit())}
+          />
+        </View>
       </View>
+
+      {/* Dimming overlay */}
+      {isSidebarVisible && (
+        <Animated.View 
+          style={[
+            styles.overlay,
+            { opacity: overlayOpacity }
+          ]} 
+          pointerEvents="none"
+        />
+      )}
+
+      {/* Sidebar */}
+      <Sidebar 
+        isVisible={isSidebarVisible} 
+        onClose={() => toggleSidebar(false)} 
+      />
     </View>
   );
 };
@@ -80,6 +114,17 @@ const DriverOrPassengerHome: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
+  },
+  contentBlurred: {
+    opacity: 0.9,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'black',
+    zIndex: 1,
   },
   bottomView: {
     position: 'absolute',

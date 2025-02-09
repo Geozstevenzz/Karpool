@@ -3,7 +3,11 @@ import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useUserMode } from '../store/userModeStore';
 import { useRouter } from 'expo-router';
 
-const TopBar: React.FC = () => {
+interface TopBarProps {
+  onMenuPress: () => void;
+}
+
+const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const mode = useUserMode((state) => state.mode);
   const setMode = useUserMode((state) => state.setMode);
   const router = useRouter();
@@ -11,20 +15,14 @@ const TopBar: React.FC = () => {
   const toggleMode = () => {
     if (mode === 'driver') {
       setMode('passenger');
-      
     } else {
       setMode('driver');
-      
     }
-  };
-
-  const navigateToMenu = () => {
-    router.push('/menu'); // Navigate to the menu screen
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={navigateToMenu}>
+      <TouchableOpacity onPress={onMenuPress}>
         <Image source={require('../assets/images/Menu.png')} style={styles.icon1} />
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleMode}>
