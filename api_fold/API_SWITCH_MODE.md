@@ -15,6 +15,7 @@
 
 #### **Response**  
 ✅ **Success (200 OK) - Seamless Switch**
+
 ```json
 {
   "message": "User mode switched successfully.",
@@ -55,6 +56,8 @@
 
 #### **Response**  
 ✅ **Success (201 Created)**
+
+#### **Database Storage**
 ```json
 {
   "vehicle": {
