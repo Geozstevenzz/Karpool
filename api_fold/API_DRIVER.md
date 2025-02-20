@@ -11,7 +11,7 @@
 {
   "driver_id": 1,
   "source": 24.3756, 31.456778,
-  "destination": 32.45678, 33. 78965,
+  "destination": 32.45678, 33.78965,
   "date": ["2025-02-15"],
   "time": "08:30 AM",
   "available_seats": 3
@@ -27,7 +27,7 @@
   "trip_id": 101,
   "driver_id": 1,
   "source": 24.3756, 31.456778,
-  "destination": 32.45678, 33. 78965,
+  "destination": 32.45678, 33.78965,
   "date": ["2025-02-15"],
   "time": "08:30 AM",
   "available_seats": 3,
