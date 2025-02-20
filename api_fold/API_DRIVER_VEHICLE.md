@@ -18,6 +18,8 @@
 
 #### **Response**  
 ✅ **Success (201 Created)**
+
+#### **Database Storage**
 ```json
 {
   "vehicle": {
