@@ -20,6 +20,8 @@
 
 #### **Response**  
 ✅ **Success (201 Created)**
+
+#### **Database Storage**
 ```json
 {
   "user": {
@@ -54,6 +56,8 @@
 
 #### **Response**  
 ✅ **Success (201 Created)**
+
+#### **Database Storage**
 ```json
 {
   "user": {
@@ -90,6 +94,8 @@
 
 #### **Response**  
 ✅ **Success (200 OK)**
+
+#### **Database Storage**
 ```json
 {
   "user": {
