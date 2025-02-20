@@ -10,9 +10,9 @@
 ```json
 {
   "driver_id": 1,
-  "source": "123 Main St, New York, NY",
-  "destination": "456 Elm St, Boston, MA",
-  "date": "2025-02-15",
+  "source": 24.3756, 31.456778,
+  "destination": 32.45678, 33. 78965,
+  "date": ["2025-02-15"],
   "time": "08:30 AM",
   "available_seats": 3
 }
@@ -20,13 +20,15 @@
 
 #### **Response**
 ✅ **Success (201 Created)**
+
+#### **Database Storage**
 ```json
 {
   "trip_id": 101,
   "driver_id": 1,
-  "source": "123 Main St, New York, NY",
-  "destination": "456 Elm St, Boston, MA",
-  "date": "2025-02-15",
+  "source": 24.3756, 31.456778,
+  "destination": 32.45678, 33. 78965,
+  "date": ["2025-02-15"],
   "time": "08:30 AM",
   "available_seats": 3,
   "message": "Trip created successfully."
@@ -42,9 +44,9 @@
 #### **Request Body**
 ```json
 {
-  "source": "789 Oak St, Philadelphia, PA",
-  "destination": "456 Elm St, Boston, MA",
-  "date": "2025-02-16",
+  "source": 22.3756, 31.456778,
+  "destination": 30.3756, 31.456778,
+  "date": ["2025-02-16", "2025-02-17"],
   "time": "09:00 AM",
   "available_seats": 2
 }
@@ -52,10 +54,22 @@
 
 #### **Response**
 ✅ **Success (200 OK)**
+
+```json
+{
+  "message": "Trip updated successfully!"
+}
+```
+
+#### **Database Storage**
 ```json
 {
   "trip_id": 101,
-  "message": "Trip updated successfully."
+  "source": 22.3756, 31.456778,
+  "destination": 30.3756, 31.456778,
+  "date": ["2025-02-16", "2025-02-17"],
+  "time": "09:00 AM",
+  "available_seats": 2
 }
 ```
 
@@ -67,9 +81,10 @@
 
 #### **Response**
 ✅ **Success (200 OK)**
+
 ```json
 {
-  "message": "Trip deleted successfully."
+  "message": "Trip deleted successfully!"
 }
 ```
 
@@ -90,7 +105,7 @@
 ✅ **Success (200 OK)**
 ```json
 {
-  "message": "Passenger request accepted."
+  "message": "Passenger request accepted!"
 }
 ```
 
@@ -104,7 +119,7 @@
 ✅ **Success (200 OK)**
 ```json
 {
-  "message": "Trip started successfully."
+  "message": "Trip started successfully!"
 }
 ```
 
@@ -125,7 +140,7 @@
 ✅ **Success (200 OK)**
 ```json
 {
-  "message": "Trip ended and payment confirmed."
+  "message": "Trip ended and payment confirmed!"
 }
 ```
 
@@ -148,7 +163,17 @@
 ✅ **Success (200 OK)**
 ```json
 {
-  "message": "Review submitted successfully."
+  "message": "Review submitted successfully!"
+}
+```
+
+#### **Database Storage**
+```json
+{
+  "review_id": 1,
+  "passenger_id": 5,
+  "rating": 4,
+  "review": "Great passenger, timely and respectful."
 }
 ```
 
