@@ -10,9 +10,9 @@
 #### **Request Body**
 ```json
 {
-  "source": "New York, NY",
-  "destination": "Boston, MA",
-  "date": "2025-03-15",
+  "source": 24.3756, 31.456778,
+  "destination": 32.45678, 33.78965,
+  "date": ["2025-03-15", "2025-03-16", "2025-03-17"],
   "time": "08:00 AM"
 }
 ```
@@ -26,9 +26,9 @@
       "trip_id": 101,
       "driver_id": 5,
       "driver_name": "Alice Smith",
-      "source": "New York, NY",
-      "destination": "Boston, MA",
-      "date": "2025-03-15",
+      "source": 24.3756, 31.456778,
+      "destination": 32.45678, 33.78965,
+      "date": ["2025-03-15", "2025-03-16", "2025-03-17"],
       "time": "08:00 AM"
     }
   ]
@@ -53,9 +53,9 @@
   "driver_id": 5,
   "driver_name": "Alice Smith",
   "vehicle": "Toyota Prius",
-  "source": "New York, NY",
-  "destination": "Boston, MA",
-  "date": "2025-03-15",
+  "source": 24.3756, 31.456778,
+  "destination": 32.45678, 33.78965,
+  "date": ["2025-03-15", "2025-03-16", "2025-03-17"],
   "time": "08:00 AM",
   "available_seats": 3
 }
@@ -79,7 +79,7 @@
 ✅ **Success (201 Created)**
 ```json
 {
-  "message": "Trip request sent to driver."
+  "message": "Trip request sent to driver!"
 }
 ```
 
@@ -102,7 +102,7 @@
 ✅ **Success (200 OK)**
 ```json
 {
-  "message": "Message sent to driver."
+  "message": "Message sent to driver!"
 }
 ```
 
@@ -127,6 +127,17 @@
 ```json
 {
   "message": "Review submitted successfully."
+}
+```
+
+#### **Database Storage**
+```json
+{
+  "review_id": 1,
+  "trip_id": 101,
+  "passenger_id": 12,
+  "rating": 5,
+  "review": "Great experience! Very professional driver."
 }
 ```
 
