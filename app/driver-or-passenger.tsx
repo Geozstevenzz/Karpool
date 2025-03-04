@@ -40,7 +40,7 @@ export default function DriverOrPassenger() {
         style={styles.box}
         onPress={() => {
           setMode('driver'); // Set mode to "driver"
-          router.push('/driver-details'); // Navigate to driver-details
+          router.push('/vehicle-picture'); // Navigate to driver-details
         }}
       >
         <Image

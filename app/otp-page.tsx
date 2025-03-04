@@ -12,7 +12,7 @@ export default function OtpPage() {
     console.log('OTP entered:', otp);
     // Implement OTP verification logic here
     // Navigate to driver-or-passenger.tsx after OTP is verified
-    router.push('/driver-or-passenger');
+    router.push('/profile-picture');
   };
 
   return (

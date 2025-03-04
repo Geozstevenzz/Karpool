@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
-import { useUserMode } from '../store/userModeStore'; // Import useUserMode
+import { Ionicons } from '@expo/vector-icons'; 
+import { useUserMode } from '../store/userModeStore'; 
 
 export default function DriverDetails() {
   const router = useRouter();
-  const setMode = useUserMode((state) => state.setMode); // Access setMode function
+  const setMode = useUserMode((state) => state.setMode); 
 
   const [car, setCar] = useState('');
   const [color, setColor] = useState('');
