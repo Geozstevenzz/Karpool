@@ -1,6 +1,6 @@
 // screens/signup.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
 
@@ -15,10 +15,43 @@ export default function Signup() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleSignup = () => {
-    console.log('Signup button pressed', { firstName, lastName, phoneNumber, email, address, password, confirmPassword });
-    // Navigate to OTP page after signup
-    router.push('/otp-page');
+  const handleSignup = async () => {
+    // 1. Check if passwords match
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match!');
+      return;
+    }
+
+    // 2. Concatenate firstName + lastName
+    const name = `${firstName} ${lastName}`;
+
+    // 3. Make a POST request to the backend
+    try {
+      const response = await fetch('http://10.0.2.2:9000/user/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,        // "Ali Khan"
+          email,       // "sarmadsiddique4506@gmail.com"
+          password,    // "securePass123"
+          phone: phoneNumber,
+          address,
+        }),
+      });
+
+      if (!response.ok) {
+        // Handle signup failure
+        Alert.alert('Signup Failed', 'Something went wrong during signup.');
+      } else {
+        // Handle signup success
+        Alert.alert('Signup Successful', 'Your account has been created!');
+        // Navigate to OTP page after successful signup
+        router.push('/otp-page');
+      }
+    } catch (error) {
+      console.error('Error during signup:', error);
+      Alert.alert('Error', 'An error occurred while signing up.');
+    }
   };
 
   return (
@@ -122,10 +155,12 @@ export default function Signup() {
       <TouchableOpacity style={[styles.button, styles.googleButton]}>
         <View style={styles.googleButtonContent}>
           <Image
-            source={require('@/assets/images/google-logo.webp')} // Import the Google logo
+            source={require('@/assets/images/google-logo.webp')}
             style={styles.googleLogo}
           />
-          <Text style={[styles.buttonText, styles.googleButtonText]}>Continue with Google</Text>
+          <Text style={[styles.buttonText, styles.googleButtonText]}>
+            Continue with Google
+          </Text>
         </View>
       </TouchableOpacity>
 
@@ -196,7 +231,7 @@ const styles = StyleSheet.create({
     borderColor: '#00308f',
     borderWidth: 1,
     marginTop: 9,
-    bottom: 10
+    bottom: 10,
   },
   googleButtonContent: {
     flexDirection: 'row',
