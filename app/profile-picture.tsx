@@ -88,7 +88,7 @@ export default function ProfilePicture() {
     console.log('Profile picture saved:', selectedImage);
 
     
-    router.push('/driver-or-passenger');
+    router.push('/login');
   };
 
   return (
