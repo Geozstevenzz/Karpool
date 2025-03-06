@@ -1,18 +1,39 @@
 // screens/otp-page.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function OtpPage() {
   const router = useRouter();
+
+  // Get the email and phone from the route params
+  const { email, phone } = useLocalSearchParams();
+
   const [otp, setOtp] = useState('');
 
-  const handleVerifyOtp = () => {
-    console.log('OTP entered:', otp);
-    // Implement OTP verification logic here
-    // Navigate to driver-or-passenger.tsx after OTP is verified
-    router.push('/profile-picture');
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:9000/user/validateOtp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          phone,
+          otp,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('OTP verification failed.');
+      }
+
+      // If OTP is verified successfully, navigate to next screen
+      router.push('/profile-picture');
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      Alert.alert('Error', 'Could not verify OTP.');
+    }
   };
 
   return (
@@ -25,9 +46,9 @@ export default function OtpPage() {
         <Text style={styles.header}>Verify your number</Text>
       </View>
 
-      {/* Instruction Text */}
+      {/* Display which email the OTP was sent to */}
       <Text style={styles.instructionText}>
-        Enter the OTP sent to +92 301 43242342
+        Enter the OTP sent to {email}
       </Text>
 
       {/* OTP Input Field */}
@@ -39,7 +60,7 @@ export default function OtpPage() {
           onChangeText={setOtp}
           keyboardType="numeric"
           placeholder="Enter OTP"
-          maxLength={6} // assuming OTP is 6 digits
+          maxLength={6} // assuming 6 digits
         />
       </View>
 
@@ -59,6 +80,7 @@ export default function OtpPage() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

@@ -46,7 +46,13 @@ export default function Signup() {
         // Handle signup success
         Alert.alert('Signup Successful', 'Your account has been created!');
         // Navigate to OTP page after successful signup
-        router.push('/otp-page');
+         router.push({
+          pathname: '/otp-page',
+          params: {
+          email: email,
+          phone: phoneNumber,
+        },
+      });
       }
     } catch (error) {
       console.error('Error during signup:', error);
