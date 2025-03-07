@@ -11,44 +11,45 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
+import { useUserStore } from '../store/userStore'; 
 
 export default function Login() {
   const router = useRouter();
+  const { setUser } = useUserStore();
 
- 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  
   const handleLogin = async () => {
     console.log('Login button pressed', { email, password, rememberMe });
 
     try {
-      
       const response = await fetch('http://10.0.2.2:9000/user/login', {
-        method: 'POST', 
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email,
           password,
-          platform: 'mobile', 
+          platform: 'mobile',
         }),
       });
 
-      
       if (!response.ok) {
         throw new Error('Login request failed.');
       }
 
-      
       const data = await response.json();
       console.log('Login successful:', data);
 
-      await SecureStore.setItemAsync('userToken', data.token);
       
+      await SecureStore.setItemAsync('userToken', data.token);
+
+      setUser(data.user);
+
+      // Navigate to the next screen
       router.push('/driver-or-passenger');
     } catch (error) {
       console.error('Error during login:', error);
@@ -59,7 +60,6 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        
         <TouchableOpacity onPress={() => router.push('/')}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
@@ -78,7 +78,7 @@ export default function Login() {
         />
       </View>
 
-      
+      {/* Password Input */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <TextInput
@@ -90,7 +90,7 @@ export default function Login() {
         />
       </View>
 
-      
+      {/* Remember Me & Forgot Password */}
       <View style={styles.rememberMeContainer}>
         <TouchableOpacity
           onPress={() => setRememberMe(!rememberMe)}
@@ -107,19 +107,19 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-      
+      {/* Login Button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      
+      {/* Divider with "Or" */}
       <View style={styles.dividerContainer}>
         <View style={styles.line} />
         <Text style={styles.orText}>Or</Text>
         <View style={styles.line} />
       </View>
 
-      
+      {/* Continue with Google */}
       <TouchableOpacity style={[styles.button, styles.googleButton]}>
         <View style={styles.googleButtonContent}>
           <Image
@@ -132,7 +132,7 @@ export default function Login() {
         </View>
       </TouchableOpacity>
 
-      
+      {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => router.push('/signup')}>

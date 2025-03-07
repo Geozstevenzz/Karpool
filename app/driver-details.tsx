@@ -2,13 +2,17 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useUserMode } from '../store/userModeStore';
 import * as SecureStore from 'expo-secure-store';
+import { useUserStore } from '../store/userStore'; 
 
 export default function DriverDetails() {
   const router = useRouter();
-  const setMode = useUserMode((state) => state.setMode);
-  const { email, phoneNumber } = useLocalSearchParams(); // Receiving login params
+  const setMode = useUserStore((state) => state.setMode); 
+  const { email, phoneNumber } = useLocalSearchParams(); 
+
+  
+  const { user } = useUserStore();
+  const userID = user?.userid;
 
   const [vehicleName, setCar] = useState('');
   const [vehicleColor, setColor] = useState('');
@@ -22,12 +26,15 @@ export default function DriverDetails() {
       return;
     }
 
-    const userID = 22;
+    if (!userID) {
+      Alert.alert('Error', 'User ID not found. Please log in again.');
+      return;
+    }
 
     const driverData = {
       email,
       phoneNumber,
-      userID,
+      userID, 
       vehicleName,
       vehicleColor,
       modelYear,
@@ -43,17 +50,19 @@ export default function DriverDetails() {
 
       const response = await fetch('http://10.0.2.2:9000/driver/registerVehicle', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'X-Platform': 'mobile'
-         },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
         body: JSON.stringify(driverData),
       });
 
       const result = await response.json();
       if (response.ok) {
         Alert.alert('Success', 'Details submitted successfully!');
-        setMode('driver');
+        // If needed, set the mode to "driver" using Zustand
+        setMode && setMode('driver');
         router.push({
           pathname: '/vehicle-picture',
           params: { email, phoneNumber }, // Passing login params forward
