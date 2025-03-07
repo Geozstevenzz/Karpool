@@ -1,15 +1,16 @@
+// driver-details.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-import { useUserStore } from '../store/userStore'; 
+import { useUserStore } from '../store/userStore';
+import { useVehicleStore } from '../store/vehicleStore'; // Import the vehicle store
 
 export default function DriverDetails() {
   const router = useRouter();
-  const setMode = useUserStore((state) => state.setMode); 
-  const { email, phoneNumber } = useLocalSearchParams(); 
-
+  const setMode = useUserStore((state) => state.setMode);
+  const { email, phoneNumber } = useLocalSearchParams();
   
   const { user } = useUserStore();
   const userID = user?.userid;
@@ -19,6 +20,9 @@ export default function DriverDetails() {
   const [modelYear, setModelYear] = useState('');
   const [vehicleNumber, setLicenseNumber] = useState('');
   const [vehicleAverage, setMileage] = useState('');
+
+  // Retrieve the setter from the vehicle store
+  const setVehicleID = useVehicleStore((state) => state.setVehicleID);
 
   const handleSubmit = async () => {
     if (!vehicleName || !vehicleColor || !modelYear || !vehicleNumber || !vehicleAverage) {
@@ -59,9 +63,19 @@ export default function DriverDetails() {
       });
 
       const result = await response.json();
+      
+      // Extract and store vehicleID from the result
+      // Adjust property names according to your API response structure
+      const vehicleIDFromResult = result.vehicle?.vehicleid;
+      if (vehicleIDFromResult) {
+        console.log("Vehicle ID:", vehicleIDFromResult);
+        setVehicleID(vehicleIDFromResult);
+      } else {
+        console.warn("No vehicleID received from API response");
+      }
+
       if (response.ok) {
         Alert.alert('Success', 'Details submitted successfully!');
-        // If needed, set the mode to "driver" using Zustand
         setMode && setMode('driver');
         router.push({
           pathname: '/vehicle-picture',

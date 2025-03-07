@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, Button, Animated } from 'react-native';
 import { useRouter } from 'expo-router';
 import LocationPicker from '../components/LocationPicker';
@@ -10,6 +10,9 @@ import { useUserMode } from '../store/userModeStore';
 import { useMapStore } from '@/store/mapStore';
 import { useDateTimeStore } from '@/store/dateTImeStore';
 import { useTripStore } from '@/store/useTripStore';
+import * as SecureStore from 'expo-secure-store';
+import { useUserStore } from '../store/userStore';
+import { useVehicleStore } from '../store/vehicleStore'; // Import vehicle store
 
 const DriverOrPassengerHome: React.FC = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -23,25 +26,58 @@ const DriverOrPassengerHome: React.FC = () => {
   const dates = useDateTimeStore((state) => state.dates);
   const trips = useTripStore((state) => state.trips);
 
+  // Get userID from the user store
+  const { user } = useUserStore();
+  const userID = user?.userid;
+
+  // Get vehicleID directly from vehicleStore
+  const vehicleID = useVehicleStore((state) => state.vehicleID);
+
+  // Load token from SecureStore
+  const [token, setToken] = useState<string | null>(null);
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync('userToken');
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+    loadToken();
+  }, []);
+
+  // Compute time string (e.g., "14:35")
   const time = timeDate.getHours() + ":" + timeDate.getMinutes();
 
   const handleSubmit = async () => {
+    if (!token) {
+      Alert.alert('Error', 'Token is missing. Please log in again.');
+      return;
+    }
+    
+    // Create a combined object with userID, vehicleID, token, markers, dates and time
+    const combinedData = {
+      //userID,
+      //vehicleID,
+      //token,
+      locationMarker,      // Contains latitude and longitude (and possibly more)
+      destinationMarker,   // Contains latitude and longitude (and possibly more)
+      time,                // Time as string
+      dates,               // Array of date strings or objects
+    };
+
+    console.log('Submitting Data:', combinedData);
+
     try {
-      const formattedDates: string[] = Object.keys(dates);
-
-      const combinedData = {
-        time,
-        date: formattedDates[0],
-        locationMarker,
-        destinationMarker,
-      };
-
-      console.log('Submitting Data:', combinedData);
-
-      const response = await fetch('http://10.0.2.2:9000/data/api/getTrips', {
+      const response = await fetch('http://10.0.2.2:9000/data/passenger/getTrips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Platform': 'mobile',
         },
         body: JSON.stringify(combinedData),
       });
@@ -94,10 +130,7 @@ const DriverOrPassengerHome: React.FC = () => {
       {/* Dimming overlay */}
       {isSidebarVisible && (
         <Animated.View 
-          style={[
-            styles.overlay,
-            { opacity: overlayOpacity }
-          ]} 
+          style={[styles.overlay, { opacity: overlayOpacity }]} 
           pointerEvents="none"
         />
       )}
