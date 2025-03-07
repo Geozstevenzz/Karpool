@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as SecureStore from 'expo-secure-store';
 
 export default function Login() {
   const router = useRouter();
@@ -46,8 +47,9 @@ export default function Login() {
       const data = await response.json();
       console.log('Login successful:', data);
 
+      await SecureStore.setItemAsync('userToken', data.token);
       
-      router.push('/driver-and-passenger-home');
+      router.push('/driver-or-passenger');
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Login Error', error.message);

@@ -1,11 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useUserMode } from '../store/userModeStore'; // Import the userMode store
 
 export default function DriverOrPassenger() {
   const router = useRouter();
+  const { email, token } = useLocalSearchParams(); // Get params from the previous screen
   const setMode = useUserMode((state) => state.setMode); // Access the setMode function
 
   return (
@@ -15,7 +16,7 @@ export default function DriverOrPassenger() {
       {/* Back Button (Arrow) */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => router.push('/otp-page')}
+        onPress={() => router.push({ pathname: '/otp-page', params: { email, token } })}
       >
         <Ionicons name="arrow-back" size={30} color="#00308F" />
       </TouchableOpacity>
@@ -25,7 +26,7 @@ export default function DriverOrPassenger() {
         style={styles.box}
         onPress={() => {
           setMode('passenger'); // Set mode to "passenger"
-          router.push('/driver-and-passenger-home'); // Navigate to passenger-home
+          router.push({ pathname: '/driver-and-passenger-home', params: { email, token } }); // Pass params
         }}
       >
         <Image
@@ -40,7 +41,7 @@ export default function DriverOrPassenger() {
         style={styles.box}
         onPress={() => {
           setMode('driver'); // Set mode to "driver"
-          router.push('/vehicle-picture'); // Navigate to driver-details
+          router.push({ pathname: '/driver-details', params: { email, token } }); // Pass params
         }}
       >
         <Image

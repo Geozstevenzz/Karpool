@@ -9,14 +9,14 @@ import {
   Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function VehiclePicture() {
   const router = useRouter();
+  const params = useLocalSearchParams(); // Receive parameters from previous screen
   const [vehicleImage, setVehicleImage] = useState<string | null>(null);
 
   const requestPermissions = async () => {
-    // Request permission for camera roll
     const mediaPermissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!mediaPermissionResult.granted) {
       Alert.alert(
@@ -26,7 +26,6 @@ export default function VehiclePicture() {
       return false;
     }
 
-    // Request permission for camera
     const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!cameraPermissionResult.granted) {
       Alert.alert(
@@ -40,7 +39,6 @@ export default function VehiclePicture() {
 
   const pickVehicleFromLibrary = async () => {
     try {
-      // Ensure permissions
       const hasPermissions = await requestPermissions();
       if (!hasPermissions) return;
 
@@ -61,7 +59,6 @@ export default function VehiclePicture() {
 
   const takeVehiclePhoto = async () => {
     try {
-      // Ensure permissions
       const hasPermissions = await requestPermissions();
       if (!hasPermissions) return;
 
@@ -84,11 +81,13 @@ export default function VehiclePicture() {
       Alert.alert('No image selected', 'Please pick or take a photo first.');
       return;
     }
-    
+
     console.log('Vehicle picture saved:', vehicleImage);
 
-    
-    router.push('/driver-details');
+    router.push({
+      pathname: '/driver-and-passenger-home',
+      params: { ...params, vehicleImage }, // Pass received and new params
+    });
   };
 
   return (
