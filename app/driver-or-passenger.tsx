@@ -30,7 +30,7 @@ export default function DriverOrPassenger() {
         }}
       >
         <Image
-          source={require('@/assets/images/passenger.png')}
+          source={require('@/assets/images/Passenger.png')}
           style={styles.icon}
         />
         <Text style={styles.boxText}>Passenger</Text>

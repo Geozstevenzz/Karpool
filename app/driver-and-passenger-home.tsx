@@ -33,6 +33,8 @@ const DriverOrPassengerHome: React.FC = () => {
   // Get vehicleID directly from vehicleStore
   const vehicleID = useVehicleStore((state) => state.vehicleID);
 
+  const dateArray = Object.keys(dates)[0];
+
   // Load token from SecureStore
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -58,7 +60,8 @@ const DriverOrPassengerHome: React.FC = () => {
       return;
     }
     
-    // Create a combined object with userID, vehicleID, token, markers, dates and time
+    
+    
     const combinedData = {
       //userID,
       //vehicleID,
@@ -66,13 +69,13 @@ const DriverOrPassengerHome: React.FC = () => {
       locationMarker,      // Contains latitude and longitude (and possibly more)
       destinationMarker,   // Contains latitude and longitude (and possibly more)
       time,                // Time as string
-      dates,               // Array of date strings or objects
+      date:dateArray               // Array of date strings or objects
     };
 
     console.log('Submitting Data:', combinedData);
 
     try {
-      const response = await fetch('http://10.0.2.2:9000/data/passenger/getTrips', {
+      const response = await fetch('http://10.0.2.2:9000/passenger/getTrips', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
