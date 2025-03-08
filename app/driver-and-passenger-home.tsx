@@ -89,6 +89,7 @@ const DriverOrPassengerHome: React.FC = () => {
         const result = await response.json();
         useTripStore.getState().setTrips(result);
         Alert.alert('Success', `Trips received: ${JSON.stringify(result)}`);
+        console.log(result);
         router.push('/confirm');
       } else {
         Alert.alert('Error', `Server returned status: ${response.status}`);
