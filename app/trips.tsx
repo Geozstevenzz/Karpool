@@ -1,34 +1,111 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 
-const mockData = {
-  currentTrips: [
-    { id: '1', destination: 'Mall of Lahore', source: 'FAST Lahore', date: '2024-12-10', time: '10:30 AM' },
-  ],
-  upcomingTrips: [
-    { id: '6', destination: 'DHA Phase 6', source: 'Johar Town', date: '2024-12-15', time: '9:00 AM' },
-  ],
-  previousTrips: [
-    { id: '11', destination: 'FAST NUCES', source: 'Gulberg', date: '2024-12-01', time: '10:00 AM' },
-  ],
-};
-
-export default function CurrentOrUpcomingTrips() {
+export default function UpcomingOrPreviousTrips() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'current' | 'upcoming' | 'previous'>('current');
+
+  // State for tabs
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'previous'>('upcoming');
+
+  // States for fetched trips
+  const [upcomingTrips, setUpcomingTrips] = useState([]);
+  const [previousTrips, setPreviousTrips] = useState([]);
+
+  // State for storing token
+  const [token, setToken] = useState<string | null>(null);
+
+  // Load the token from SecureStore once
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync('userToken');
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+    loadToken();
+  }, []);
+
+  // Fetch trips once token is available
+  useEffect(() => {
+    if (token) {
+      fetchUpcomingTrips();
+      fetchPreviousTrips();
+    }
+  }, [token]);
+
+  const fetchUpcomingTrips = async () => {
+    try {
+      const response = await fetch('http://10.0.2.2:9000/user/upcomingTrips', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Adjust if your API returns a different structure
+      // e.g., data might be { upcomingTrips: [...] }
+      setUpcomingTrips(data.upcomingTrips || []);
+    } catch (error) {
+      console.error('Error fetching upcoming trips:', error);
+      Alert.alert('Error', 'Could not fetch upcoming trips.');
+    }
+  };
+
+  const fetchPreviousTrips = async () => {
+    try {
+      // Adjust the endpoint if needed (e.g., /user/previousTrips)
+      const response = await fetch('http://10.0.2.2:9000/user/previousTrips', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      // Adjust if your API returns a different structure
+      setPreviousTrips(data.previousTrips || []);
+    } catch (error) {
+      console.error('Error fetching previous trips:', error);
+      Alert.alert('Error', 'Could not fetch previous trips.');
+    }
+  };
 
   const handleTripPress = (tripId: string) => {
+    // Navigate to trip-details screen
     router.push(`/trip-details`);
   };
 
   const renderTrip = ({ item }) => (
     <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item.id)}>
       <Text style={styles.tripDestination}>{item.destination}</Text>
-      <Text style={styles.tripDetails}>{item.date} - {item.time}</Text>
+      <Text style={styles.tripDetails}>
+        {item.date} - {item.time}
+      </Text>
     </TouchableOpacity>
   );
+
+  // Decide which data to render based on active tab
+  const tripData = activeTab === 'upcoming' ? upcomingTrips : previousTrips;
 
   return (
     <View style={styles.container}>
@@ -40,22 +117,30 @@ export default function CurrentOrUpcomingTrips() {
         <Text style={styles.header}>My Trips</Text>
       </View>
 
-      {/* Tab Switcher */}
+      {/* Tab Switcher (Upcoming & Previous Only) */}
       <View style={styles.tabContainer}>
-        <TouchableOpacity style={[styles.tab, activeTab === 'current' && styles.activeTab]} onPress={() => setActiveTab('current')}>
-          <Text style={activeTab === 'current' ? styles.activeTabText : styles.tabText}>Current Trips</Text>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
+          onPress={() => setActiveTab('upcoming')}
+        >
+          <Text style={activeTab === 'upcoming' ? styles.activeTabText : styles.tabText}>
+            Upcoming Trips
+          </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]} onPress={() => setActiveTab('upcoming')}>
-          <Text style={activeTab === 'upcoming' ? styles.activeTabText : styles.tabText}>Upcoming Trips</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, activeTab === 'previous' && styles.activeTab]} onPress={() => setActiveTab('previous')}>
-          <Text style={activeTab === 'previous' ? styles.activeTabText : styles.tabText}>Previous Trips</Text>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'previous' && styles.activeTab]}
+          onPress={() => setActiveTab('previous')}
+        >
+          <Text style={activeTab === 'previous' ? styles.activeTabText : styles.tabText}>
+            Previous Trips
+          </Text>
         </TouchableOpacity>
       </View>
 
       {/* Trip List */}
       <FlatList
-        data={activeTab === 'current' ? mockData.currentTrips : activeTab === 'upcoming' ? mockData.upcomingTrips : mockData.previousTrips}
+        data={tripData}
         keyExtractor={(item) => item.id}
         renderItem={renderTrip}
         contentContainerStyle={styles.listContainer}
