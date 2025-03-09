@@ -1,8 +1,14 @@
 // screens/trip-details.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+
+interface Passenger {
+  id: string;
+  name: string;
+  rating: number;
+}
 
 interface TripDetails {
   id: string;
@@ -20,6 +26,7 @@ interface TripDetails {
     discountVoucher: number;
     total: number;
   };
+  passengers: Passenger[];
 }
 
 // Mock data service - replace with actual API calls
@@ -39,12 +46,27 @@ const getTripDetails = (id: string): TripDetails => ({
     discountVoucher: 200.0,
     total: 780.0,
   },
+  passengers: [
+    { id: '1', name: 'Ali Raza', rating: 4.2 },
+    { id: '2', name: 'Fatima Khan', rating: 4.8 },
+  ],
 });
 
 export default function TripDetails() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const tripDetails = getTripDetails(id as string);
+
+  const [passengers, setPassengers] = useState(tripDetails.passengers);
+  const [acceptedPassengers, setAcceptedPassengers] = useState<string[]>([]);
+
+  const handleAccept = (passengerId: string) => {
+    setAcceptedPassengers([...acceptedPassengers, passengerId]);
+  };
+
+  const handleReject = (passengerId: string) => {
+    setPassengers(passengers.filter(passenger => passenger.id !== passengerId));
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -113,6 +135,52 @@ export default function TripDetails() {
               PKR {tripDetails.price.total.toFixed(2)}
             </Text>
           </View>
+        </View>
+
+        {/* Passengers Section */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.detailsHeader}>Passengers</Text>
+          {passengers.length === 0 ? (
+            <Text style={styles.noPassengersText}>No passenger requests yet.</Text>
+          ) : (
+            passengers.map(passenger => (
+              <View key={passenger.id} style={styles.passengerItem}>
+                <View style={styles.passengerInfo}>
+                  <Text style={styles.passengerName}>{passenger.name}</Text>
+                  <View style={styles.ratingDisplay}>
+                    <Ionicons name="star" size={16} color="#FFD700" />
+                    <Text style={styles.ratingText}>{passenger.rating}</Text>
+                  </View>
+                </View>
+                <View style={styles.passengerActions}>
+                  <TouchableOpacity
+                    style={styles.contactButton}
+                    onPress={() => router.push('/contact-driver')}
+                  >
+                    <Text style={styles.buttonText}>Contact</Text>
+                  </TouchableOpacity>
+                  {acceptedPassengers.includes(passenger.id) ? (
+                    <Text style={styles.acceptedText}>Cancel Request</Text>
+                  ) : (
+                    <>
+                      <TouchableOpacity
+                        style={styles.acceptButton}
+                        onPress={() => handleAccept(passenger.id)}
+                      >
+                        <Text style={styles.buttonText}>Accept</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.rejectButton}
+                        onPress={() => handleReject(passenger.id)}
+                      >
+                        <Text style={styles.buttonText}>Reject</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
     </View>
@@ -237,5 +305,59 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope-SemiBold',
     fontSize: 14,
     color: '#000000',
+  },
+  passengerItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  passengerInfo: {
+    flex: 1,
+  },
+  passengerName: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: 14,
+    color: '#000',
+  },
+  passengerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  contactButton: {
+    backgroundColor: '#00308F',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  acceptButton: {
+    backgroundColor: '#28A745',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  rejectButton: {
+    backgroundColor: '#DC3545',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  acceptedText: {
+    fontFamily: 'Manrope-SemiBold',
+    fontSize: 14,
+    color: '#28A745',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+  },
+  noPassengersText: {
+    fontFamily: 'Manrope-Regular',
+    fontSize: 14,
+    color: '#666',
   },
 });
