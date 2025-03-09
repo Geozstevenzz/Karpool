@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useUserMode } from '../store/userModeStore';
+import { useUserStore } from '../store/userStore';
+import { useVehicleStore } from '../store/vehicleStore';
 import { useRouter } from 'expo-router';
 
 interface TopBarProps {
@@ -10,14 +12,31 @@ interface TopBarProps {
 const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const mode = useUserMode((state) => state.mode);
   const setMode = useUserMode((state) => state.setMode);
+  const { user } = useUserStore();
+  const vehicleID = useVehicleStore((state) => state.vehicleID);
   const router = useRouter();
 
   const toggleMode = () => {
-    if (mode === 'driver') {
-      setMode('passenger');
-    } else {
-      setMode('driver');
-    }
+    Alert.alert(
+      "Confirm Mode Switch",
+      "Are you sure you want to switch your mode?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes",
+          onPress: () => {
+            if (mode === 'passenger') {
+              if (!vehicleID) {
+                router.push('/driver-details'); // First-time driver goes to input vehicle details
+              }
+              setMode('driver');
+            } else {
+              setMode('passenger');
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -27,11 +46,9 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleMode}>
         <Image
-          source={
-            mode === 'driver'
-              ? require('../assets/images/Steering Wheel.png')
-              : require('../assets/images/Passenger1.png')
-          }
+          source={mode === 'driver'
+            ? require('../assets/images/Steering Wheel.png')
+            : require('../assets/images/Passenger1.png')}
           style={styles.icon2}
         />
       </TouchableOpacity>
