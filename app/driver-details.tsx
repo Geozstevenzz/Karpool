@@ -1,17 +1,17 @@
-// driver-details.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useUserStore } from '../store/userStore';
-import { useVehicleStore } from '../store/vehicleStore'; // Import the vehicle store
+import { useVehicleStore } from '../store/vehicleStore';
+import { useDriverStore } from '../store/driverStore'; // Import driver store
 
 export default function DriverDetails() {
   const router = useRouter();
   const setMode = useUserStore((state) => state.setMode);
   const { email, phoneNumber } = useLocalSearchParams();
-  
+
   const { user } = useUserStore();
   const userID = user?.userid;
 
@@ -21,8 +21,9 @@ export default function DriverDetails() {
   const [vehicleNumber, setLicenseNumber] = useState('');
   const [vehicleAverage, setMileage] = useState('');
 
-  // Retrieve the setter from the vehicle store
+  // Retrieve the setters from Zustand stores
   const setVehicleID = useVehicleStore((state) => state.setVehicleID);
+  const setDriverID = useDriverStore((state) => state.setDriverID);
 
   const handleSubmit = async () => {
     if (!vehicleName || !vehicleColor || !modelYear || !vehicleNumber || !vehicleAverage) {
@@ -38,7 +39,7 @@ export default function DriverDetails() {
     const driverData = {
       email,
       phoneNumber,
-      userID, 
+      userID,
       vehicleName,
       vehicleColor,
       modelYear,
@@ -63,9 +64,17 @@ export default function DriverDetails() {
       });
 
       const result = await response.json();
-      
-      // Extract and store vehicleID from the result
-      // Adjust property names according to your API response structure
+      console.log(result);
+
+      // Extract and store driverID and vehicleID
+      const driverIDFromResult = result.driver?.driverid;
+      if (driverIDFromResult) {
+        console.log("Driver ID:", driverIDFromResult);
+        setDriverID(driverIDFromResult);
+      } else {
+        console.warn("No driverID received from API response");
+      }
+
       const vehicleIDFromResult = result.vehicle?.vehicleid;
       if (vehicleIDFromResult) {
         console.log("Vehicle ID:", vehicleIDFromResult);

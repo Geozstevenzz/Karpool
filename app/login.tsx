@@ -50,7 +50,7 @@ export default function Login() {
       setUser(data.user);
 
       // Navigate to the next screen
-      router.push('/driver-or-passenger');
+      router.push('/driver-and-passenger-home');
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Login Error', error.message);

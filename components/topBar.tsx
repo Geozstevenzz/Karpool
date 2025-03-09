@@ -3,6 +3,7 @@ import { View, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useUserMode } from '../store/userModeStore';
 import { useUserStore } from '../store/userStore';
 import { useVehicleStore } from '../store/vehicleStore';
+import { useDriverStore } from '../store/driverStore'; // Import Zustand store for driverID
 import { useRouter } from 'expo-router';
 
 interface TopBarProps {
@@ -14,7 +15,10 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const setMode = useUserMode((state) => state.setMode);
   const { user } = useUserStore();
   const vehicleID = useVehicleStore((state) => state.vehicleID);
+  const driverID = useDriverStore((state) => state.driverID); // Fetch driverID from Zustand
   const router = useRouter();
+
+  console.log(user);
 
   const toggleMode = () => {
     Alert.alert(
@@ -26,8 +30,10 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
           text: "Yes",
           onPress: () => {
             if (mode === 'passenger') {
-              if (!vehicleID) {
-                router.push('/driver-details'); // First-time driver goes to input vehicle details
+              if (!user.driverid) {
+                // First-time driver without driverID: Redirect to Driver Details
+                router.push('/driver-details');
+                return;
               }
               setMode('driver');
             } else {
