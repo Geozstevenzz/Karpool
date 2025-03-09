@@ -56,8 +56,7 @@ export default function UpcomingOrPreviousTrips() {
       }
 
       const data = await response.json();
-      // Adjust if your API returns a different structure
-      // e.g., data might be { upcomingTrips: [...] }
+      
       setUpcomingTrips(data.upcomingTrips || []);
     } catch (error) {
       console.error('Error fetching upcoming trips:', error);
@@ -67,8 +66,7 @@ export default function UpcomingOrPreviousTrips() {
 
   const fetchPreviousTrips = async () => {
     try {
-      // Adjust the endpoint if needed (e.g., /user/previousTrips)
-      const response = await fetch('http://10.0.2.2:9000/user/previousTrips', {
+      const response = await fetch('http://10.0.2.2:9000/user/allUserTrips', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -76,40 +74,48 @@ export default function UpcomingOrPreviousTrips() {
           'X-Platform': 'mobile',
         },
       });
-
+  
       if (!response.ok) {
         throw new Error(`Server returned status: ${response.status}`);
       }
-
+  
       const data = await response.json();
-      // Adjust if your API returns a different structure
-      setPreviousTrips(data.previousTrips || []);
+      
+      // Filter trips based on status
+      const previousTripsData = data.allTrips.filter((trip) => trip.status === 'completed');
+  
+      setPreviousTrips(previousTripsData);
     } catch (error) {
       console.error('Error fetching previous trips:', error);
       Alert.alert('Error', 'Could not fetch previous trips.');
     }
   };
+  
 
-  const handleTripPress = (tripId: string) => {
-    // Navigate to trip-details screen
-    router.push(`/trip-details`);
+  const handleTripPress = (tripId: number) => {
+    router.push(`/trip-details?tripId=${tripId}`);
+  };
+
+  const formatDate = (tripdate: string) => {
+    const dateObj = new Date(tripdate);
+    return dateObj.toDateString(); // Example: "Mon Jan 20 2025"
   };
 
   const renderTrip = ({ item }) => (
-    <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item.id)}>
-      <Text style={styles.tripDestination}>{item.destination}</Text>
+    <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item.tripid)}>
+      <Text style={styles.tripDestination}>Trip ID: {item.tripid}</Text>
       <Text style={styles.tripDetails}>
-        {item.date} - {item.time}
+        {formatDate(item.tripdate)} - {item.triptime}
       </Text>
+      <Text style={styles.tripDetails}>Seats: {item.totalseats}</Text>
+      <Text style={styles.tripDetails}>Price: ${item.price}</Text>
     </TouchableOpacity>
   );
 
-  // Decide which data to render based on active tab
   const tripData = activeTab === 'upcoming' ? upcomingTrips : previousTrips;
 
   return (
     <View style={styles.container}>
-      {/* Header with Back Arrow */}
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
@@ -117,7 +123,6 @@ export default function UpcomingOrPreviousTrips() {
         <Text style={styles.header}>My Trips</Text>
       </View>
 
-      {/* Tab Switcher (Upcoming & Previous Only) */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
@@ -138,10 +143,9 @@ export default function UpcomingOrPreviousTrips() {
         </TouchableOpacity>
       </View>
 
-      {/* Trip List */}
       <FlatList
         data={tripData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.tripid.toString()}
         renderItem={renderTrip}
         contentContainerStyle={styles.listContainer}
       />
