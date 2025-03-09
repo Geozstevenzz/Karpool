@@ -73,7 +73,7 @@ export default function TripDetails() {
       {/* Header Background */}
       <View style={styles.headerBackground}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.push('/menu')} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.push('/trips')} style={styles.backButton}>
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Trip Details</Text>
