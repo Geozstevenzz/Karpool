@@ -1,6 +1,6 @@
 // screens/trip-details.tsx
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -61,11 +61,45 @@ export default function TripDetails() {
   const [acceptedPassengers, setAcceptedPassengers] = useState<string[]>([]);
 
   const handleAccept = (passengerId: string) => {
-    setAcceptedPassengers([...acceptedPassengers, passengerId]);
+    Alert.alert(
+      'Confirm Acceptance',
+      'Are you sure you want to Accept the request?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: () => setAcceptedPassengers([...acceptedPassengers, passengerId]),
+        },
+      ]
+    );
   };
 
   const handleReject = (passengerId: string) => {
-    setPassengers(passengers.filter(passenger => passenger.id !== passengerId));
+    Alert.alert(
+      'Confirm Rejection',
+      'Are you sure you want to Reject the request?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: () => setPassengers(passengers.filter(passenger => passenger.id !== passengerId)),
+        },
+      ]
+    );
+  };
+
+  const handleCancelRequest = (passengerId: string) => {
+    Alert.alert(
+      'Cancel Request',
+      'Are you sure you want to cancel the request?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          onPress: () => setAcceptedPassengers(acceptedPassengers.filter(id => id !== passengerId)),
+        },
+      ]
+    );
   };
 
   return (
@@ -114,29 +148,6 @@ export default function TripDetails() {
           </View>
         </View>
 
-        {/* Payment Details */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsHeader}>Payment Detail</Text>
-          <View style={styles.paymentItem}>
-            <Text style={styles.paymentLabel}>Trip Expense</Text>
-            <Text style={styles.paymentAmount}>
-              PKR {tripDetails.price.tripExpense.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.paymentItem}>
-            <Text style={styles.paymentLabel}>Discount Voucher</Text>
-            <Text style={styles.paymentAmount}>
-              PKR {tripDetails.price.discountVoucher.toFixed(2)}
-            </Text>
-          </View>
-          <View style={styles.paymentItem}>
-            <Text style={styles.paymentLabel}>Total</Text>
-            <Text style={styles.paymentAmount}>
-              PKR {tripDetails.price.total.toFixed(2)}
-            </Text>
-          </View>
-        </View>
-
         {/* Passengers Section */}
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsHeader}>Passengers</Text>
@@ -147,11 +158,12 @@ export default function TripDetails() {
               <View key={passenger.id} style={styles.passengerItem}>
                 <View style={styles.passengerInfo}>
                   <Text style={styles.passengerName}>{passenger.name}</Text>
-                  <View style={styles.ratingDisplay}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                     <Ionicons name="star" size={16} color="#FFD700" />
-                    <Text style={styles.ratingText}>{passenger.rating}</Text>
+                    <Text style={{ marginLeft: 4, fontSize: 14, color: '#333' }}>{passenger.rating.toFixed(1)}</Text>
                   </View>
                 </View>
+
                 <View style={styles.passengerActions}>
                   <TouchableOpacity
                     style={styles.contactButton}
@@ -160,7 +172,11 @@ export default function TripDetails() {
                     <Text style={styles.buttonText}>Contact</Text>
                   </TouchableOpacity>
                   {acceptedPassengers.includes(passenger.id) ? (
-                    <Text style={styles.acceptedText}>Cancel Request</Text>
+                    <TouchableOpacity
+                      onPress={() => handleCancelRequest(passenger.id)}
+                    >
+                      <Text style={styles.acceptedText}>Cancel Request</Text>
+                    </TouchableOpacity>
                   ) : (
                     <>
                       <TouchableOpacity
@@ -361,3 +377,6 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+
+
+export default TripDetails;
