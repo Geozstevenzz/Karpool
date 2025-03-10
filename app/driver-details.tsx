@@ -5,14 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useUserStore } from '../store/userStore';
 import { useVehicleStore } from '../store/vehicleStore';
-import { useDriverStore } from '../store/driverStore'; // Import driver store
+import { useDriverStore } from '../store/driverStore';
 
 export default function DriverDetails() {
   const router = useRouter();
   const setMode = useUserStore((state) => state.setMode);
   const { email, phoneNumber } = useLocalSearchParams();
 
-  const { user } = useUserStore();
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
   const userID = user?.userid;
 
   const [vehicleName, setCar] = useState('');
@@ -57,7 +58,7 @@ export default function DriverDetails() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'X-Platform': 'mobile',
         },
         body: JSON.stringify(driverData),
@@ -67,10 +68,18 @@ export default function DriverDetails() {
       console.log(result);
 
       // Extract and store driverID and vehicleID
-      const driverIDFromResult = result.driver?.driverid;
+      const driverIDFromResult = result.vehicle?.driverid;
       if (driverIDFromResult) {
         console.log("Driver ID:", driverIDFromResult);
         setDriverID(driverIDFromResult);
+        // Update the user object in userStore with the new driverid
+        if (user) {
+          setUser({ ...user, driverid: driverIDFromResult });
+        } else {
+          setUser({ driverid: driverIDFromResult });
+        }
+
+        
       } else {
         console.warn("No driverID received from API response");
       }
@@ -88,7 +97,7 @@ export default function DriverDetails() {
         setMode && setMode('driver');
         router.push({
           pathname: '/vehicle-picture',
-          params: { email, phoneNumber }, // Passing login params forward
+          params: { email, phoneNumber },
         });
       } else {
         Alert.alert('Error', result.message || 'Something went wrong');

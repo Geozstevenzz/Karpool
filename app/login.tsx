@@ -48,6 +48,7 @@ export default function Login() {
       await SecureStore.setItemAsync('userToken', data.token);
 
       setUser(data.user);
+      console.log("This is user: ",data.user);
 
       // Navigate to the next screen
       router.push('/driver-and-passenger-home');
