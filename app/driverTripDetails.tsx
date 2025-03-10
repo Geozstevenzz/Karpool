@@ -33,6 +33,9 @@ const HomeScreen: React.FC = () => {
   const locationMarker = useMapStore((state) => state.locationMarker);
   const destinationMarker = useMapStore((state) => state.destinationMarker);
 
+  const locationName = useMapStore((state) => state.locationName);
+  const destinationName = useMapStore((state) => state.destinationName);
+
   // Date/time from dateTimeStore
   const timeDate = useDateTimeStore((state) => state.time);
   const dateObjects = useDateTimeStore((state) => state.dates);
@@ -75,6 +78,8 @@ const HomeScreen: React.FC = () => {
         seats,
         locationMarker,
         destinationMarker,
+        locationName,
+        destinationName
       };
 
       console.log('Submitting:', combinedData);
