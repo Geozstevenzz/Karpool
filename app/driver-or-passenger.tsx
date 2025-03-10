@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   header: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 24,
     color: '#00308F',
     marginBottom: 40,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   boxText: {
-    fontFamily: 'Manrope-SemiBold',
+   
     fontSize: 18,
     color: '#00308F',
     marginTop: 10,

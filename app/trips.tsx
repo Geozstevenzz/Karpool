@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   header: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 24,
     color: '#00308F',
   },
@@ -190,12 +190,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#00308F',
   },
   tabText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#00308F',
   },
   activeTabText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#FFFFFF',
   },
@@ -214,13 +214,13 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   tripDestination: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#00308F',
     marginBottom: 5,
   },
   tripDetails: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666',
   },

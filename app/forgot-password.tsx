@@ -65,14 +65,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 24,
     color: '#00308F',
     marginLeft: 10,
   },
   instructionText: {
     width: '90%',
-    fontFamily: 'Manrope-Regular',
+   
     fontSize: 14,
     color: '#00308F',
     marginBottom: 20,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    fontFamily: 'Manrope-SemiBold',
+   
     fontSize: 13,
     color: '#00308F',
     marginBottom: 3,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     marginTop: 17,
   },
   buttonText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 15,
     color: '#FFFFFF',
   },

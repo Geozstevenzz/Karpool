@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     color: '#00308F',
-    fontFamily: 'Manrope-SemiBold',
+    
     marginBottom: 20,
   },
   placeholderContainer: {
@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 14,
     color: '#999ea1',
-    fontFamily: 'Manrope-Regular',
+    
   },
   imagePreview: {
     width: 250,
@@ -168,14 +168,13 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    fontFamily: 'Manrope-SemiBold',
-    fontSize: 15,
+    
   },
   backLink: {
     marginTop: 20,
   },
   backLinkText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#00308F',
     textDecorationLine: 'underline',

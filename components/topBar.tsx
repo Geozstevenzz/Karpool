@@ -30,8 +30,9 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
           text: "Yes",
           onPress: () => {
             if (mode === 'passenger') {
-              console.log("DriverID is",driverID);
-              if (!driverID) {
+              //console.log("DriverID is",driverID);
+              console.log(user?.driverid);
+              if (!user.driverid) {
                 // First-time driver without driverID: Redirect to Driver Details
                 router.push('/driver-details');
                 return;

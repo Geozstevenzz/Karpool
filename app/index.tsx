@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     left: 20,
   },
   text: {
-    fontFamily: 'Manrope-SemiBold',
+   
     fontSize: 32,
     color: '#FFFFFF',
   },
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     top: 11,
   },
   subtext: {
-    fontFamily: 'Manrope-SemiBold',
+   
     fontSize: 24,
     color: '#FFFFFF',
     position: 'absolute',
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
     left: 20,
   },
   footer: {
-    fontFamily: 'Manrope-SemiBold',
+   
     fontSize: 18,
     color: '#FFFFFF',
     position: 'absolute',
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     bottom: 40,
   },
   buttonText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 20,
     color: '#1485EE',
     fontWeight: '600',

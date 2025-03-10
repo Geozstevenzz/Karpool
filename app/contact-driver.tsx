@@ -138,12 +138,12 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   driverName: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#00308F',
   },
   driverStatus: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 13,
     color: '#007F00',
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   profileText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#00308F',
   },
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   callText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#FFFFFF',
   },
@@ -192,12 +192,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   messageText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#00308F',
   },
   messageTime: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 11,
     color: '#999EA1',
     alignSelf: 'flex-end',
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     borderColor: '#999EA1',
     borderRadius: 20,
     paddingHorizontal: 10,
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#00308F',
     backgroundColor: '#FFFFFF',

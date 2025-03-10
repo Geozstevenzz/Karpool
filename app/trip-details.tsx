@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerTitle: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 18,
     color: '#FFFFFF',
     textAlign: 'center',
@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   driverName: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#FFFFFF',
     marginBottom: 4,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#FFFFFF',
     marginLeft: 4,
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   detailsHeader: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#000000',
     marginBottom: 15,
@@ -291,7 +291,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666666',
     marginLeft: 10,
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   timeText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666666',
     marginLeft: 10,
@@ -313,12 +313,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   paymentLabel: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666666',
   },
   paymentAmount: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#000000',
   },
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   passengerName: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#000',
   },
@@ -363,7 +363,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   acceptedText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#28A745',
   },
@@ -372,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   noPassengersText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666',
   },

@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 24,
     color: '#00308F',
     marginLeft: 10,
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     marginBottom: 11,
   },
   label: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 13,
     color: '#00308F',
     marginBottom: 3,
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   buttonText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 15,
     color: '#FFFFFF',
   },
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#D3D3D3',
   },
   orText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 13,
     color: '#00308F',
     marginHorizontal: 11,
@@ -279,12 +279,12 @@ const styles = StyleSheet.create({
     bottom: 15,
   },
   loginText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 13,
     color: '#999ea1',
   },
   loginLink: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 13,
     color: '#00308f',
     textDecorationLine: 'underline',

@@ -151,10 +151,10 @@ export default function DriverDetails() {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: '#FFFFFF', paddingHorizontal: 20 },
   headerContainer: { width: '90%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  header: { fontFamily: 'Manrope-SemiBold', fontSize: 24, color: '#00308F', marginLeft: 10 },
+  header: { fontSize: 24, color: '#00308F', marginLeft: 10 },
   inputContainer: { width: '90%', marginBottom: 9 },
-  label: { fontFamily: 'Manrope-SemiBold', fontSize: 13, color: '#00308F', marginBottom: 10, marginLeft: 5 },
+  label: {  fontSize: 13, color: '#00308F', marginBottom: 10, marginLeft: 5 },
   input: { width: '100%', height: 33, borderColor: '#999ea1', borderWidth: 1, borderRadius: 8, paddingLeft: 11, color: '#00308F', backgroundColor: '#FFFFFF' },
   button: { width: '90%', backgroundColor: '#00308F', paddingVertical: 8, borderRadius: 10, alignItems: 'center', marginTop: 17, marginBottom: 175 },
-  buttonText: { fontFamily: 'Manrope-SemiBold', fontSize: 15, color: '#FFFFFF' },
+  buttonText: {  fontSize: 15, color: '#FFFFFF' },
 });

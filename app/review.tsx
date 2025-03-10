@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerTitle: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 18,
     color: '#FFFFFF',
     textAlign: 'center',
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   driverName: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#FFFFFF',
     marginBottom: 4,
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ratingText: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#FFFFFF',
     marginLeft: 4,
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   ratingQuestion: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#000000',
     marginBottom: 10,
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     textAlignVertical: 'top',
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     marginBottom: 20,
   },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   detailsHeader: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 16,
     color: '#000000',
     marginBottom: 15,
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationText: {
-    fontFamily: 'Manrope-Regular',
+   
     fontSize: 14,
     color: '#666666',
     marginLeft: 10,
@@ -258,12 +258,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   paymentLabel: {
-    fontFamily: 'Manrope-Regular',
+    
     fontSize: 14,
     color: '#666666',
   },
   paymentAmount: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 14,
     color: '#000000',
   },
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButtonText: {
-    fontFamily: 'Manrope-SemiBold',
+    
     fontSize: 15,
     color: '#FFFFFF',
   },
