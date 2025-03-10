@@ -1,106 +1,72 @@
-// screens/trip-details.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
-interface Passenger {
-  id: string;
-  name: string;
-  rating: number;
-}
-
-interface TripDetails {
-  id: string;
-  destination: string;
-  source: string;
-  date: string;
-  time: string;
-  driver: {
-    name: string;
-    rating: number;
-    profilePic: any;
-  };
-  price: {
-    tripExpense: number;
-    discountVoucher: number;
-    total: number;
-  };
-  passengers: Passenger[];
-}
-
-// Mock data service - replace with actual API calls
-const getTripDetails = (id: string): TripDetails => ({
-  id,
-  destination: 'Mall of Lahore',
-  source: 'FAST Lahore',
-  date: '2024-12-10',
-  time: '10:30 AM',
-  driver: {
-    name: 'Safwan Akbar',
-    rating: 4.5,
-    profilePic: require('@/assets/images/react-logo.png'),
-  },
-  price: {
-    tripExpense: 980.0,
-    discountVoucher: 200.0,
-    total: 780.0,
-  },
-  passengers: [
-    { id: '1', name: 'Ali Raza', rating: 4.2 },
-    { id: '2', name: 'Fatima Khan', rating: 4.8 },
-  ],
-});
+import * as SecureStore from 'expo-secure-store';
+import { useTripStore } from '@/store/useTripStore';
 
 export default function TripDetails() {
-  const { id } = useLocalSearchParams();
   const router = useRouter();
-  const tripDetails = getTripDetails(id as string);
+  const { id } = useLocalSearchParams();
+  
+  // Retrieve the selected trip from the trip store (set when a trip is clicked)
+  const selectedTrip = useTripStore((state) => state.selectedTrip);
 
-  const [passengers, setPassengers] = useState(tripDetails.passengers);
-  const [acceptedPassengers, setAcceptedPassengers] = useState<string[]>([]);
+  // State for storing the token
+  const [token, setToken] = useState<string | null>(null);
 
-  const handleAccept = (passengerId: string) => {
-    Alert.alert(
-      'Confirm Acceptance',
-      'Are you sure you want to Accept the request?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes',
-          onPress: () => setAcceptedPassengers([...acceptedPassengers, passengerId]),
-        },
-      ]
+  // Load the token from SecureStore
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync('userToken');
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token from SecureStore:', error);
+      }
+    };
+    loadToken();
+  }, []);
+
+  // Make a request to driver/trips/:tripid/requests once we have a valid trip & token
+  useEffect(() => {
+    if (!selectedTrip?.tripid || !token) return;
+    console.log(selectedTrip.tripid)
+
+    const fetchRequests = async () => {
+      try {
+        const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/requests`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'X-Platform': 'mobile',
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server returned status ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Trip Requests Response:', data);
+      } catch (error) {
+        console.error('Erro fetching trip requests:', error);
+      }
+    };
+
+    fetchRequests();
+  }, [selectedTrip, token]);
+
+  if (!selectedTrip) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Trip not found</Text>
+      </View>
     );
-  };
-
-  const handleReject = (passengerId: string) => {
-    Alert.alert(
-      'Confirm Rejection',
-      'Are you sure you want to Reject the request?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes',
-          onPress: () => setPassengers(passengers.filter(passenger => passenger.id !== passengerId)),
-        },
-      ]
-    );
-  };
-
-  const handleCancelRequest = (passengerId: string) => {
-    Alert.alert(
-      'Cancel Request',
-      'Are you sure you want to cancel the request?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes',
-          onPress: () => setAcceptedPassengers(acceptedPassengers.filter(id => id !== passengerId)),
-        },
-      ]
-    );
-  };
+  }
 
   return (
     <View style={styles.mainContainer}>
@@ -116,13 +82,9 @@ export default function TripDetails() {
         {/* Driver Info Section */}
         <View style={styles.driverInfo}>
           <View style={styles.driverLeftSection}>
-            <Image source={tripDetails.driver.profilePic} style={styles.profilePic} />
+            {/* <Image source={selectedTrip.driver.profilePic} style={styles.profilePic} /> */}
             <View style={styles.driverNameSection}>
-              <Text style={styles.driverName}>{tripDetails.driver.name}</Text>
-              <View style={styles.ratingDisplay}>
-                <Ionicons name="star" size={16} color="#FFD700" />
-                <Text style={styles.ratingText}>{tripDetails.driver.rating}</Text>
-              </View>
+              <Text style={styles.driverName}>{selectedTrip.driverid}</Text>
             </View>
           </View>
         </View>
@@ -134,69 +96,18 @@ export default function TripDetails() {
           <Text style={styles.detailsHeader}>Trip Detail</Text>
           <View style={styles.locationItem}>
             <Ionicons name="location-outline" size={20} color="#00308F" />
-            <Text style={styles.locationText}>{tripDetails.source}</Text>
+            <Text style={styles.locationText}>{selectedTrip.startlocation}</Text>
           </View>
           <View style={styles.locationItem}>
             <Ionicons name="location-outline" size={20} color="#FF0000" />
-            <Text style={styles.locationText}>{tripDetails.destination}</Text>
+            <Text style={styles.locationText}>{selectedTrip.destinationlocation}</Text>
           </View>
           <View style={styles.timeItem}>
             <Ionicons name="time-outline" size={20} color="#00308F" />
             <Text style={styles.timeText}>
-              {tripDetails.date} - {tripDetails.time}
+              {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
             </Text>
           </View>
-        </View>
-
-        {/* Passengers Section */}
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsHeader}>Passengers</Text>
-          {passengers.length === 0 ? (
-            <Text style={styles.noPassengersText}>No passenger requests yet.</Text>
-          ) : (
-            passengers.map(passenger => (
-              <View key={passenger.id} style={styles.passengerItem}>
-                <View style={styles.passengerInfo}>
-                  <Text style={styles.passengerName}>{passenger.name}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                    <Ionicons name="star" size={16} color="#FFD700" />
-                    <Text style={{ marginLeft: 4, fontSize: 14, color: '#333' }}>{passenger.rating.toFixed(1)}</Text>
-                  </View>
-                </View>
-
-                <View style={styles.passengerActions}>
-                  <TouchableOpacity
-                    style={styles.contactButton}
-                    onPress={() => router.push('/contact-driver')}
-                  >
-                    <Text style={styles.buttonText}>Contact</Text>
-                  </TouchableOpacity>
-                  {acceptedPassengers.includes(passenger.id) ? (
-                    <TouchableOpacity
-                      onPress={() => handleCancelRequest(passenger.id)}
-                    >
-                      <Text style={styles.acceptedText}>Cancel Request</Text>
-                    </TouchableOpacity>
-                  ) : (
-                    <>
-                      <TouchableOpacity
-                        style={styles.acceptButton}
-                        onPress={() => handleAccept(passenger.id)}
-                      >
-                        <Text style={styles.buttonText}>Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.rejectButton}
-                        onPress={() => handleReject(passenger.id)}
-                      >
-                        <Text style={styles.buttonText}>Reject</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </View>
-              </View>
-            ))
-          )}
         </View>
       </ScrollView>
     </View>
@@ -225,7 +136,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   headerTitle: {
-    
     fontSize: 18,
     color: '#FFFFFF',
     textAlign: 'center',
@@ -241,30 +151,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  driverNameSection: {
-    marginLeft: 12,
-  },
   profilePic: {
     width: 50,
     height: 50,
     borderRadius: 25,
     backgroundColor: '#FFFFFF',
   },
+  driverNameSection: {
+    marginLeft: 12,
+  },
   driverName: {
-    
     fontSize: 16,
     color: '#FFFFFF',
     marginBottom: 4,
-  },
-  ratingDisplay: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    
-    fontSize: 14,
-    color: '#FFFFFF',
-    marginLeft: 4,
   },
   container: {
     flex: 1,
@@ -280,7 +179,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   detailsHeader: {
-    
     fontSize: 16,
     color: '#000000',
     marginBottom: 15,
@@ -291,7 +189,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   locationText: {
-    
     fontSize: 14,
     color: '#666666',
     marginLeft: 10,
@@ -302,81 +199,12 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   timeText: {
-    
     fontSize: 14,
     color: '#666666',
     marginLeft: 10,
   },
-  paymentItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  paymentLabel: {
-    
-    fontSize: 14,
-    color: '#666666',
-  },
-  paymentAmount: {
-    
-    fontSize: 14,
-    color: '#000000',
-  },
-  passengerItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
-  passengerInfo: {
-    flex: 1,
-  },
-  passengerName: {
-    
-    fontSize: 14,
-    color: '#000',
-  },
-  passengerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  contactButton: {
-    backgroundColor: '#00308F',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    marginRight: 5,
-  },
-  acceptButton: {
-    backgroundColor: '#28A745',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    marginRight: 5,
-  },
-  rejectButton: {
-    backgroundColor: '#DC3545',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  acceptedText: {
-    
-    fontSize: 14,
-    color: '#28A745',
-  },
-  buttonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-  },
-  noPassengersText: {
-    
-    fontSize: 14,
-    color: '#666',
+  errorText: {
+    color: 'red',
+    fontSize: 18,
   },
 });
-
-
-export default TripDetails;

@@ -4,10 +4,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 
-export default function UpcomingOrPreviousTrips() {
+import { useTripStore } from '@/store/useTripStore';
+
+const ConfirmScreen: React.FC = () => {
   const router = useRouter();
 
-  // State for tabs
+  // State for tabs (only upcoming & previous trips; if needed, adjust)
   const [activeTab, setActiveTab] = useState<'upcoming' | 'previous'>('upcoming');
 
   // States for fetched trips
@@ -56,8 +58,10 @@ export default function UpcomingOrPreviousTrips() {
       }
 
       const data = await response.json();
-      
-      setUpcomingTrips(data.upcomingTrips || []);
+      console.log("Trips : ", data);
+      // If the API returns an array directly, use it; otherwise use data.upcomingTrips
+      const tripsArray = Array.isArray(data) ? data : data.upcomingTrips || [];
+      setUpcomingTrips(tripsArray);
     } catch (error) {
       console.error('Error fetching upcoming trips:', error);
       Alert.alert('Error', 'Could not fetch upcoming trips.');
@@ -76,33 +80,32 @@ export default function UpcomingOrPreviousTrips() {
       });
   
       if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
+        throw new Error(`Server retuned status: ${response.status}`);
       }
   
       const data = await response.json();
-      
-      // Filter trips based on status
-      const previousTripsData = data.allTrips.filter((trip) => trip.status === 'completed');
-  
-      setPreviousTrips(previousTripsData);
+      const previousTripsArray = Array.isArray(data) ? data : data.previousTrips || [];
+      setPreviousTrips(previousTripsArray);
     } catch (error) {
       console.error('Error fetching previous trips:', error);
       Alert.alert('Error', 'Could not fetch previous trips.');
     }
   };
-  
 
-  const handleTripPress = (tripId: number) => {
-    router.push(`/trip-details?tripId=${tripId}`);
+  // When a trip is pressed, store the trip in useTripStore and navigate
+  const handleTripPress = (trip: any) => {
+    // Store the selected trip in useTripStore by adding a new property 'selectedTrip'
+    useTripStore.setState({ selectedTrip: trip });
+    router.push(`/trip-details?tripId=${trip.tripid}`);
   };
 
   const formatDate = (tripdate: string) => {
     const dateObj = new Date(tripdate);
-    return dateObj.toDateString(); // Example: "Mon Jan 20 2025"
+    return dateObj.toDateString();
   };
 
   const renderTrip = ({ item }) => (
-    <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item.tripid)}>
+    <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item)}>
       <Text style={styles.tripDestination}>Trip ID: {item.tripid}</Text>
       <Text style={styles.tripDetails}>
         {formatDate(item.tripdate)} - {item.triptime}
@@ -116,6 +119,7 @@ export default function UpcomingOrPreviousTrips() {
 
   return (
     <View style={styles.container}>
+      {/* Header with Back Arrow */}
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
@@ -123,6 +127,7 @@ export default function UpcomingOrPreviousTrips() {
         <Text style={styles.header}>My Trips</Text>
       </View>
 
+      {/* Tab Switcher (Upcoming & Previous Only) */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
@@ -143,6 +148,7 @@ export default function UpcomingOrPreviousTrips() {
         </TouchableOpacity>
       </View>
 
+      {/* Trip List */}
       <FlatList
         data={tripData}
         keyExtractor={(item) => item.tripid.toString()}
@@ -151,7 +157,7 @@ export default function UpcomingOrPreviousTrips() {
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -169,7 +175,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   header: {
-    
     fontSize: 24,
     color: '#00308F',
   },
@@ -190,12 +195,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#00308F',
   },
   tabText: {
-    
     fontSize: 14,
     color: '#00308F',
   },
   activeTabText: {
-    
     fontSize: 14,
     color: '#FFFFFF',
   },
@@ -214,14 +217,14 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   tripDestination: {
-    
     fontSize: 16,
     color: '#00308F',
     marginBottom: 5,
   },
   tripDetails: {
-    
     fontSize: 14,
     color: '#666',
   },
 });
+
+export default ConfirmScreen;
