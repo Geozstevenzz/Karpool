@@ -11,6 +11,7 @@ export default function TripDetails() {
   
   // Retrieve the selected trip from the trip store (set when a trip is clicked)
   const selectedTrip = useTripStore((state) => state.selectedTrip);
+  console.log("Selected Trip:",selectedTrip);
 
   // State for storing the token
   const [token, setToken] = useState<string | null>(null);
@@ -84,7 +85,7 @@ export default function TripDetails() {
           <View style={styles.driverLeftSection}>
             {/* <Image source={selectedTrip.driver.profilePic} style={styles.profilePic} /> */}
             <View style={styles.driverNameSection}>
-              <Text style={styles.driverName}>{selectedTrip.driverid}</Text>
+              <Text style={styles.driverName}>{selectedTrip.drivername}</Text>
             </View>
           </View>
         </View>
@@ -96,11 +97,11 @@ export default function TripDetails() {
           <Text style={styles.detailsHeader}>Trip Detail</Text>
           <View style={styles.locationItem}>
             <Ionicons name="location-outline" size={20} color="#00308F" />
-            <Text style={styles.locationText}>{selectedTrip.startlocation}</Text>
+            <Text style={styles.locationText}>{selectedTrip.sourcename}</Text>
           </View>
           <View style={styles.locationItem}>
             <Ionicons name="location-outline" size={20} color="#FF0000" />
-            <Text style={styles.locationText}>{selectedTrip.destinationlocation}</Text>
+            <Text style={styles.locationText}>{selectedTrip.destinationname}</Text>
           </View>
           <View style={styles.timeItem}>
             <Ionicons name="time-outline" size={20} color="#00308F" />

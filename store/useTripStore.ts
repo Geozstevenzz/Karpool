@@ -21,6 +21,8 @@ type Trip = {
   vehiclecolor: string;
   vehiclenumber: string;
   vehicleaverage: number;
+  sourcename: string;
+  destinationname: string;
 };
 
 type TripStore = {

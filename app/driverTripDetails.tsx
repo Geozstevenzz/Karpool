@@ -23,6 +23,7 @@ const HomeScreen: React.FC = () => {
 
   // Retrieve vehicleID directly from vehicleStore
   const vehicleID = useVehicleStore((state) => state.vehicleID);
+  console.log("Vehicle ID:", vehicleID);
 
   // Local state for form inputs
   const [stops, setStops] = useState('');
@@ -33,8 +34,11 @@ const HomeScreen: React.FC = () => {
   const locationMarker = useMapStore((state) => state.locationMarker);
   const destinationMarker = useMapStore((state) => state.destinationMarker);
 
-  const locationName = useMapStore((state) => state.locationName);
+  const sourceName = useMapStore((state) => state.locationName);
   const destinationName = useMapStore((state) => state.destinationName);
+
+  console.log("Location Name:", sourceName);
+  console.log("Destination Name:", destinationName);
 
   // Date/time from dateTimeStore
   const timeDate = useDateTimeStore((state) => state.time);
@@ -78,7 +82,7 @@ const HomeScreen: React.FC = () => {
         seats,
         locationMarker,
         destinationMarker,
-        locationName,
+        sourceName,
         destinationName
       };
 
