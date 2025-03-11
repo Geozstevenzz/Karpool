@@ -46,6 +46,7 @@ export default function TripDetails() {
         }
 
         const data = await response.json();
+        console.log("Selected Trip Requests:",data);
         setTripRequests(data.tripRequests);
       } catch (error) {
         console.error('Error fetching trip requests:', error);
@@ -149,8 +150,10 @@ export default function TripDetails() {
             <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Trip Details</Text>
+          <Text style={styles.driver}>{selectedTrip.drivername}</Text>
         </View>
       </View>
+
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.detailsContainer}>
@@ -163,35 +166,44 @@ export default function TripDetails() {
             <Ionicons name="location-outline" size={20} color="#FF0000" />
             <Text style={styles.locationText}>{selectedTrip.destinationname}</Text>
           </View>
+          <Text style={styles.timeText}>
+              {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
+          </Text>
+
         </View>
 
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsHeader}>Passenger Requests</Text>
-          {tripRequests.length === 0 ? (
+          {tripRequests.filter(request => request.status !== 'REJECTED').length === 0 ? (
             <Text style={styles.noRequestsText}>No passenger requests</Text>
           ) : (
-            tripRequests.map((request) => (
-              <View key={request.requestId} style={styles.requestItem}>
-                <Text style={styles.passengerText}>{request.passenger.username}</Text>
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
-                    <Text style={styles.buttonText}>Contact</Text>
-                  </TouchableOpacity>
-                  {!request.accepted && (
-                    <>
-                      <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
-                        <Text style={styles.buttonText}>Accept</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity style={styles.rejectButton} onPress={() => handleReject(request.requestId)}>
-                        <Text style={styles.buttonText}>Reject</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
+            tripRequests
+              .filter(request => request.status !== 'REJECTED')
+              .map((request) => (
+                <View key={request.requestId} style={styles.requestItem}>
+                  <Text style={styles.passengerText}>{request.passenger.username}</Text>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
+                      <Text style={styles.buttonText}>Contact</Text>
+                    </TouchableOpacity>
+                    {!request.accepted && (
+                      <>
+                        <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
+                          <Text style={styles.buttonText}>Accept</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.rejectButton} onPress={() => handleReject(request.requestId)}>
+                          <Text style={styles.buttonText}>Reject</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
                 </View>
-              </View>
-            ))
+              ))
           )}
         </View>
+
+
+
       </ScrollView>
     </View>
   );
@@ -231,6 +243,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
     marginRight: 5,
+  },
+   driver: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    bottom: -30,
+    left: -250,
+    textAlign: 'left',
+    marginTop: 5, // small space between Trip Details and driver name
+    // Optionally add marginLeft for consistent indentation:
+    // marginLeft: 20,
   },
   acceptButton: {
     backgroundColor: '#28a745', // Green for Accept
