@@ -56,50 +56,82 @@ export default function TripDetails() {
   }, [selectedTrip, token]);
 
   const handleAccept = async (requestId) => {
-    Alert.alert('Accept Request', 'Are you sure you want to accept this request?', [
-      { text: 'No', style: 'cancel' },
-      { text: 'Yes', onPress: async () => {
+    if (!token || !selectedTrip?.tripid) {
+      Alert.alert("Error", "Missing authentication token or trip ID.");
+      return;
+    }
+  
+    Alert.alert("Accept Request", "Are you sure you want to accept this request?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: async () => {
           try {
-            await fetch('http://10.0.2.2:9000/driver/acceptPassengerReq', {
-              method: 'POST',
+            const response = await fetch("http://10.0.2.2:9000/driver/acceptPassengerReq", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "X-Platform": "mobile",
               },
-              body: JSON.stringify({ requestId }),
+              body: JSON.stringify({ tripId: selectedTrip.tripid, requestId }),
             });
+  
+            if (!response.ok) {
+              throw new Error(`Failed to accept request. Status: ${response.status}`);
+            }
+  
+            // Update state only if the API call succeeds
             setTripRequests((prevRequests) =>
               prevRequests.map(req => req.requestId === requestId ? { ...req, accepted: true } : req)
             );
           } catch (error) {
-            console.error('Error accepting request:', error);
+            console.error("Error accepting request:", error);
+            Alert.alert("Error", "Could not accept request. Please try again.");
           }
-        }
-      }
+        },
+      },
     ]);
   };
+  
 
   const handleReject = async (requestId) => {
-    Alert.alert('Reject Request', 'Are you sure you want to reject this request?', [
-      { text: 'No', style: 'cancel' },
-      { text: 'Yes', onPress: async () => {
+    if (!token || !selectedTrip?.tripid) {
+      Alert.alert("Error", "Missing authentication token or trip ID.");
+      return;
+    }
+  
+    Alert.alert("Reject Request", "Are you sure you want to reject this request?", [
+      { text: "No", style: "cancel" },
+      {
+        text: "Yes",
+        onPress: async () => {
           try {
-            await fetch('http://10.0.2.2:9000/driver/rejectPassengerReq', {
-              method: 'POST',
+            const response = await fetch("http://10.0.2.2:9000/driver/rejectPassengerReq", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+                "X-Platform": "mobile",
               },
-              body: JSON.stringify({ requestId }),
+              body: JSON.stringify({ tripId: selectedTrip.tripid, requestId }),
             });
+  
+            if (!response.ok) {
+              throw new Error(`Failed to reject request. Status: ${response.status}`);
+            }
+  
+            // Update state only if the API call succeeds
             setTripRequests((prevRequests) => prevRequests.filter(req => req.requestId !== requestId));
           } catch (error) {
-            console.error('Error rejecting request:', error);
+            console.error("Error rejecting request:", error);
+            Alert.alert("Error", "Could not reject request. Please try again.");
           }
-        }
-      }
+        },
+      },
     ]);
   };
+  
 
   if (!selectedTrip) {
     return (
