@@ -8,8 +8,10 @@ import {
   Animated,
   PanResponder,
   Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
 
 interface SidebarProps {
   isVisible: boolean;
@@ -73,6 +75,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     router.push(route);
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to log out?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await SecureStore.deleteItemAsync('token');
+              closeSidebar();
+              router.replace('/'); // Redirect to index.tsx
+            } catch (error) {
+              console.error('Error logging out:', error);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -106,6 +135,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           onPress={() => navigateTo('/settings')}
         >
           <Text style={styles.menuText}>Settings</Text>
+        </TouchableOpacity>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleLogout}>
+          <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -159,6 +193,17 @@ const styles = StyleSheet.create({
   menuText: {
     fontSize: 16,
     color: '#333',
+  },
+  logoutButton: {
+    marginTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: '#ff4d4d',
+  },
+  logoutText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
