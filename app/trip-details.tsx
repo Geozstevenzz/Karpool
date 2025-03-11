@@ -68,6 +68,10 @@ export default function TripDetails() {
         text: "Yes",
         onPress: async () => {
           try {
+
+            console.log("Trip ID:", selectedTrip.tripid);
+            console.log("Request ID:", requestId);
+
             const response = await fetch("http://10.0.2.2:9000/driver/acceptPassengerReq", {
               method: "POST",
               headers: {

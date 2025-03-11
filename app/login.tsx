@@ -11,11 +11,13 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
-import { useUserStore } from '../store/userStore'; 
+import { useUserStore } from '../store/userStore';
+import { useVehicleStore } from '../store/vehicleStore';
 
 export default function Login() {
   const router = useRouter();
   const { setUser } = useUserStore();
+  const setVehicleID = useVehicleStore((state) => state.setVehicleID);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -44,11 +46,17 @@ export default function Login() {
       const data = await response.json();
       console.log('Login successful:', data);
 
-      
+      // Save the token in SecureStore
       await SecureStore.setItemAsync('userToken', data.token);
 
+      // Update the user object in userStore
       setUser(data.user);
-      console.log("This is user: ",data.user);
+      console.log("This is user: ", data.user);
+
+      // If the user object contains a vehicle id, store it in the vehicle store
+      if (data.user.vehicleid) {
+        setVehicleID(data.user.vehicleid);
+      }
 
       // Navigate to the next screen
       router.push('/driver-and-passenger-home');
@@ -161,7 +169,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-   
     fontSize: 24,
     color: '#00308F',
     marginLeft: 10,
@@ -171,7 +178,6 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   label: {
-    
     fontSize: 13,
     color: '#00308F',
     marginBottom: 3,
@@ -211,12 +217,10 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   rememberMeText: {
-    
     fontSize: 13,
     color: '#00308F',
   },
   forgotPasswordText: {
-    
     fontSize: 13,
     color: '#FB344F',
   },
@@ -229,7 +233,6 @@ const styles = StyleSheet.create({
     marginTop: 17,
   },
   buttonText: {
-    
     fontSize: 15,
     color: '#FFFFFF',
   },
@@ -245,7 +248,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#D3D3D3',
   },
   orText: {
-    
     fontSize: 13,
     color: '#00308F',
     marginHorizontal: 11,
@@ -273,14 +275,14 @@ const styles = StyleSheet.create({
     marginTop: 17,
   },
   signupText: {
-    
     fontSize: 13,
     color: '#999ea1',
   },
   signupLink: {
-    
     fontSize: 13,
     color: '#00308f',
     textDecorationLine: 'underline',
   },
 });
+
+export default Login;
