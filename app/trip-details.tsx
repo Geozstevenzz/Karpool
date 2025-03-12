@@ -46,7 +46,7 @@ export default function TripDetails() {
         }
 
         const data = await response.json();
-        console.log("Selected Trip Requests:",data);
+        console.log("Selected Trip Requests:", data);
         setTripRequests(data.tripRequests);
       } catch (error) {
         console.error('Error fetching trip requests:', error);
@@ -68,7 +68,6 @@ export default function TripDetails() {
         text: "Yes",
         onPress: async () => {
           try {
-
             console.log("Trip ID:", selectedTrip.tripid);
             console.log("Request ID:", requestId);
 
@@ -86,9 +85,11 @@ export default function TripDetails() {
               throw new Error(`Failed to accept request. Status: ${response.status}`);
             }
   
-            // Update state only if the API call succeeds
+            // Immediately update the request's status to "ACCEPTED"
             setTripRequests((prevRequests) =>
-              prevRequests.map(req => req.requestId === requestId ? { ...req, accepted: true } : req)
+              prevRequests.map(req =>
+                req.requestId === requestId ? { ...req, status: 'ACCEPTED' } : req
+              )
             );
           } catch (error) {
             console.error("Error accepting request:", error);
@@ -98,7 +99,6 @@ export default function TripDetails() {
       },
     ]);
   };
-  
 
   const handleReject = async (requestId) => {
     if (!token || !selectedTrip?.tripid) {
@@ -126,7 +126,7 @@ export default function TripDetails() {
               throw new Error(`Failed to reject request. Status: ${response.status}`);
             }
   
-            // Update state only if the API call succeeds
+            // Remove the request from state
             setTripRequests((prevRequests) => prevRequests.filter(req => req.requestId !== requestId));
           } catch (error) {
             console.error("Error rejecting request:", error);
@@ -136,7 +136,6 @@ export default function TripDetails() {
       },
     ]);
   };
-  
 
   if (!selectedTrip) {
     return (
@@ -158,7 +157,6 @@ export default function TripDetails() {
         </View>
       </View>
 
-
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsHeader}>Trip Detail</Text>
@@ -173,7 +171,6 @@ export default function TripDetails() {
           <Text style={styles.timeText}>
               {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
           </Text>
-
         </View>
 
         <View style={styles.detailsContainer}>
@@ -190,7 +187,7 @@ export default function TripDetails() {
                     <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
                       <Text style={styles.buttonText}>Contact</Text>
                     </TouchableOpacity>
-                    {!request.accepted && (
+                    {request.status === 'PENDING' && (
                       <>
                         <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
                           <Text style={styles.buttonText}>Accept</Text>
@@ -205,14 +202,10 @@ export default function TripDetails() {
               ))
           )}
         </View>
-
-
-
       </ScrollView>
     </View>
   );
 }
-
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#FFFFFF' },
@@ -226,20 +219,15 @@ const styles = StyleSheet.create({
   detailsHeader: { fontSize: 16, fontWeight: 'bold', color: '#000000', marginBottom: 10 },
   locationItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   locationText: { fontSize: 14, color: '#666666', marginLeft: 10 },
-  timeItem: { flexDirection: 'row', alignItems: 'center', marginTop: 5 },
   timeText: { fontSize: 14, color: '#666666', marginLeft: 10 },
   errorText: { color: 'red', fontSize: 18 },
   passengerRequestsContainer: { backgroundColor: '#F7F9FC', padding: 15, borderRadius: 8, marginTop: 20 },
   requestItem: { backgroundColor: '#FFFFFF', padding: 10, borderRadius: 8, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.2, shadowRadius: 1.41, elevation: 2 },
   passengerText: { fontSize: 14, color: '#333333', marginBottom: 5 },
   noRequestsText: { fontSize: 14, color: '#666666', fontStyle: 'italic' },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10,
-  },
+  buttonRow: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
   contactButton: {
-    backgroundColor: '#007bff', // Blue for Contact
+    backgroundColor: '#007bff',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -248,18 +236,16 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
-   driver: {
+  driver: {
     fontSize: 16,
     color: '#FFFFFF',
-    bottom: -30,
-    left: -250,
+    // Remove negative offsets, adjust margin as needed
+    marginTop: 5,
+    marginLeft: 10,
     textAlign: 'left',
-    marginTop: 5, // small space between Trip Details and driver name
-    // Optionally add marginLeft for consistent indentation:
-    // marginLeft: 20,
   },
   acceptButton: {
-    backgroundColor: '#28a745', // Green for Accept
+    backgroundColor: '#28a745',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -269,7 +255,7 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   rejectButton: {
-    backgroundColor: '#dc3545', // Red for Reject
+    backgroundColor: '#dc3545',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -283,3 +269,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+export default TripDetails;
