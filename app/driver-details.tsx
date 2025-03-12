@@ -110,7 +110,7 @@ export default function DriverDetails() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity onPress={() => router.push('/driver-or-passenger')}>
+        <TouchableOpacity onPress={() => router.push('/driver-and-passenger-home')}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
         <Text style={styles.header}>Enter Driver Details</Text>
