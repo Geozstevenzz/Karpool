@@ -18,12 +18,7 @@
 ✅ **Success (201 Created)**
 ```json
 {
-  "message": "Bookmark added successfully.",
-  "bookmark": {
-    "bookmark_id": 1,
-    "user_id": 123,
-    "location": "123 Main St, New York, NY"
-  }
+  "message": "Bookmark added successfully."
 }
 ```
 
@@ -41,8 +36,7 @@
 #### **Request Body**
 ```json
 {
-  "user_id": 123,
-  "location": "123 Main St, New York, NY"
+  "bookmark_id": 4
 }
 ```
 
