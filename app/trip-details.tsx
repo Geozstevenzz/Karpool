@@ -9,7 +9,9 @@ export default function TripDetails() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
-  
+
+  console.log("Trip Status:", selectedTrip.status);
+
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
   // New state to track whether the trip has started
@@ -88,7 +90,7 @@ export default function TripDetails() {
               throw new Error(`Failed to accept request. Status: ${response.status}`);
             }
   
-            // Assume the API returns the updated trip details including the updated numberofpassengers
+            // Assume the API returns the updated trip details including updated numberofpassengers
             const updatedTrip = await response.json();
             useTripStore.setState({ selectedTrip: updatedTrip });
   
@@ -158,7 +160,7 @@ export default function TripDetails() {
           text: "Yes",
           onPress: async () => {
             try {
-              console.log(selectedTrip.tripid);
+              console.log("Starting trip:", selectedTrip.tripid);
               
               const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/start`, {
                 method: "POST",
@@ -171,6 +173,8 @@ export default function TripDetails() {
               if (!response.ok) {
                 throw new Error(`Failed to start trip. Status: ${response.status}`);
               }
+              const data = await response.json();
+              console.log("Start Trip Response:", data);
               setTripStarted(true);
             } catch (error) {
               console.error("Error starting trip:", error);
@@ -198,6 +202,9 @@ export default function TripDetails() {
               if (!response.ok) {
                 throw new Error(`Failed to complete trip. Status: ${response.status}`);
               }
+
+              const data = await response.json();
+              console.log("Complete Trip Response:", data);
               setTripStarted(false);
             } catch (error) {
               console.error("Error stopping trip:", error);
@@ -275,11 +282,23 @@ export default function TripDetails() {
           )}
         </View>
 
-        {/* Render Start/Stop Trip Button if there are passengers */}
-        {selectedTrip.numberofpassengers > 0 && (
+        {/* Render Start/Stop Trip Button if trip is not completed */}
+        {selectedTrip.status !== 'completed' && selectedTrip.numberofpassengers > 0 && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
             <Text style={styles.buttonText}>{tripStarted ? "Stop Trip" : "Start Trip"}</Text>
           </TouchableOpacity>
+        )}
+
+        {/* If trip is completed, show Completed label and Review Trip button */}
+        {selectedTrip.status === 'completed' && (
+          <View style={styles.completedContainer}>
+            <TouchableOpacity style={styles.completedButton}>
+              <Text style={styles.completedButtonText}>Trip Completed</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/review')}>
+              <Text style={styles.reviewButtonText}>Review Trip</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -347,13 +366,43 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   startTripButton: {
-    backgroundColor: '#FFA500', // Use an appropriate color (e.g., orange)
+    backgroundColor: '#FFA500',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+  },
+  completedContainer: {
+    marginTop: 20,
+  },
+  completedButton: {
+    backgroundColor: '#28a745',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  completedButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  reviewButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
