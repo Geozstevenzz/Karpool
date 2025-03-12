@@ -9,11 +9,12 @@ import { useTripStore } from '@/store/useTripStore';
 const ConfirmScreen: React.FC = () => {
   const router = useRouter();
 
-  // State for tabs (only upcoming & previous trips; if needed, adjust)
-  const [activeTab, setActiveTab] = useState<'upcoming' | 'previous'>('upcoming');
+  // Now three tabs: upcoming, ongoing, and previous
+  const [activeTab, setActiveTab] = useState<'upcoming' | 'ongoing' | 'previous'>('upcoming');
 
   // States for fetched trips
   const [upcomingTrips, setUpcomingTrips] = useState([]);
+  const [ongoingTrips, setOngoingTrips] = useState([]);
   const [previousTrips, setPreviousTrips] = useState([]);
 
   // State for storing token
@@ -38,7 +39,7 @@ const ConfirmScreen: React.FC = () => {
   useEffect(() => {
     if (token) {
       fetchUpcomingTrips();
-      fetchPreviousTrips();
+      fetchAllUserTrips();
     }
   }, [token]);
 
@@ -58,17 +59,20 @@ const ConfirmScreen: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Trips : ", data);
+      console.log("Trips (Upcoming): ", data);
       // If the API returns an array directly, use it; otherwise use data.upcomingTrips
       const tripsArray = Array.isArray(data) ? data : data.upcomingTrips || [];
-      setUpcomingTrips(tripsArray);
+      // Filter out trips with status "completed" from upcoming trips
+      const filteredTrips = tripsArray.filter(trip => trip.status !== 'completed');
+      setUpcomingTrips(filteredTrips);
     } catch (error) {
       console.error('Error fetching upcoming trips:', error);
       Alert.alert('Error', 'Could not fetch upcoming trips.');
     }
   };
 
-  const fetchPreviousTrips = async () => {
+  // Fetch all user trips then filter them into ongoing and previous trips
+  const fetchAllUserTrips = async () => {
     try {
       const response = await fetch('http://10.0.2.2:9000/user/allUserTrips', {
         method: 'GET',
@@ -80,15 +84,21 @@ const ConfirmScreen: React.FC = () => {
       });
   
       if (!response.ok) {
-        throw new Error(`Server retuned status: ${response.status}`);
+        throw new Error(`Server returned status: ${response.status}`);
       }
   
       const data = await response.json();
-      const previousTripsArray = Array.isArray(data) ? data : data.previousTrips || [];
+      console.log("All User Trips:", data);
+      const tripsArray = Array.isArray(data) ? data : data.allTrips || [];
+      // Ongoing trips: only trips with status "ongoing"
+      const ongoingTripsArray = tripsArray.filter(trip => trip.status === 'ongoing');
+      // Previous trips: we assume these are completed trips
+      const previousTripsArray = tripsArray.filter(trip => trip.status === 'completed');
+      setOngoingTrips(ongoingTripsArray);
       setPreviousTrips(previousTripsArray);
     } catch (error) {
-      console.error('Error fetching previous trips:', error);
-      Alert.alert('Error', 'Could not fetch previous trips.');
+      console.error('Error fetching all user trips:', error);
+      Alert.alert('Error', 'Could not fetch user trips.');
     }
   };
 
@@ -115,7 +125,14 @@ const ConfirmScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  const tripData = activeTab === 'upcoming' ? upcomingTrips : previousTrips;
+  let tripData;
+  if (activeTab === 'upcoming') {
+    tripData = upcomingTrips;
+  } else if (activeTab === 'ongoing') {
+    tripData = ongoingTrips;
+  } else {
+    tripData = previousTrips;
+  }
 
   return (
     <View style={styles.container}>
@@ -127,7 +144,7 @@ const ConfirmScreen: React.FC = () => {
         <Text style={styles.header}>My Trips</Text>
       </View>
 
-      {/* Tab Switcher (Upcoming & Previous Only) */}
+      {/* Tab Switcher (Upcoming, Ongoing & Previous) */}
       <View style={styles.tabContainer}>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'upcoming' && styles.activeTab]}
@@ -137,7 +154,14 @@ const ConfirmScreen: React.FC = () => {
             Upcoming Trips
           </Text>
         </TouchableOpacity>
-
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'ongoing' && styles.activeTab]}
+          onPress={() => setActiveTab('ongoing')}
+        >
+          <Text style={activeTab === 'ongoing' ? styles.activeTabText : styles.tabText}>
+            Ongoing Trips
+          </Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'previous' && styles.activeTab]}
           onPress={() => setActiveTab('previous')}

@@ -12,6 +12,8 @@ export default function TripDetails() {
   
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
+  // New state to track whether the trip has started
+  const [tripStarted, setTripStarted] = useState(false);
 
   useEffect(() => {
     const loadToken = async () => {
@@ -47,6 +49,7 @@ export default function TripDetails() {
 
         const data = await response.json();
         console.log("Selected Trip Requests:", data);
+        console.log("Number of Passengers:", selectedTrip.numberofpassengers);
         setTripRequests(data.tripRequests);
       } catch (error) {
         console.error('Error fetching trip requests:', error);
@@ -85,7 +88,11 @@ export default function TripDetails() {
               throw new Error(`Failed to accept request. Status: ${response.status}`);
             }
   
-            // Immediately update the request's status to "ACCEPTED"
+            // Assume the API returns the updated trip details including the updated numberofpassengers
+            const updatedTrip = await response.json();
+            useTripStore.setState({ selectedTrip: updatedTrip });
+  
+            // Also update the specific request's status in local state
             setTripRequests((prevRequests) =>
               prevRequests.map(req =>
                 req.requestId === requestId ? { ...req, status: 'ACCEPTED' } : req
@@ -126,7 +133,7 @@ export default function TripDetails() {
               throw new Error(`Failed to reject request. Status: ${response.status}`);
             }
   
-            // Remove the request from state
+            // Update state only if the API call succeeds by removing the rejected request
             setTripRequests((prevRequests) => prevRequests.filter(req => req.requestId !== requestId));
           } catch (error) {
             console.error("Error rejecting request:", error);
@@ -135,6 +142,71 @@ export default function TripDetails() {
         },
       },
     ]);
+  };
+
+  const handleStartOrStopTrip = () => {
+    if (!token || !selectedTrip?.tripid) {
+      Alert.alert("Error", "Missing authentication token or trip ID.");
+      return;
+    }
+    
+    if (!tripStarted) {
+      // Trip not started yet, confirm start
+      Alert.alert("Start Trip", "Are you sure you want to start this trip?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              console.log(selectedTrip.tripid);
+              
+              const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/start`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+                  "X-Platform": "mobile",
+                },
+              });
+              if (!response.ok) {
+                throw new Error(`Failed to start trip. Status: ${response.status}`);
+              }
+              setTripStarted(true);
+            } catch (error) {
+              console.error("Error starting trip:", error);
+              Alert.alert("Error", "Could not start trip. Please try again.");
+            }
+          },
+        },
+      ]);
+    } else {
+      // Trip already started, confirm stop
+      Alert.alert("Stop Trip", "Are you sure you want to end this trip?", [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/complete`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${token}`,
+                  "X-Platform": "mobile",
+                },
+              });
+              if (!response.ok) {
+                throw new Error(`Failed to complete trip. Status: ${response.status}`);
+              }
+              setTripStarted(false);
+            } catch (error) {
+              console.error("Error stopping trip:", error);
+              Alert.alert("Error", "Could not end trip. Please try again.");
+            }
+          },
+        },
+      ]);
+    }
   };
 
   if (!selectedTrip) {
@@ -169,7 +241,7 @@ export default function TripDetails() {
             <Text style={styles.locationText}>{selectedTrip.destinationname}</Text>
           </View>
           <Text style={styles.timeText}>
-              {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
+            {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
           </Text>
         </View>
 
@@ -202,6 +274,13 @@ export default function TripDetails() {
               ))
           )}
         </View>
+
+        {/* Render Start/Stop Trip Button if there are passengers */}
+        {selectedTrip.numberofpassengers > 0 && (
+          <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
+            <Text style={styles.buttonText}>{tripStarted ? "Stop Trip" : "Start Trip"}</Text>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </View>
   );
@@ -239,7 +318,6 @@ const styles = StyleSheet.create({
   driver: {
     fontSize: 16,
     color: '#FFFFFF',
-    // Remove negative offsets, adjust margin as needed
     marginTop: 5,
     marginLeft: 10,
     textAlign: 'left',
@@ -267,6 +345,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  startTripButton: {
+    backgroundColor: '#FFA500', // Use an appropriate color (e.g., orange)
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
   },
 });
 
