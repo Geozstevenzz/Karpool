@@ -36,7 +36,7 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    console.log('Login button pressed', { email, password, rememberMe });
+    //console.log('Login button pressed', { email, password, rememberMe });
 
     try {
       const response = await fetch('http://10.0.2.2:9000/user/login', {
@@ -63,7 +63,7 @@ export default function Login() {
 
       // Update the user object in userStore
       setUser(data.user);
-      console.log("This is user: ", data.user);
+      //console.log("This is user: ", data.user);
 
       // If the user object contains a vehicle id, store it in the vehicle store
       if (data.user.vehicleid) {

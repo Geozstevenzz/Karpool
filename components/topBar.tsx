@@ -18,7 +18,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const driverID = useDriverStore((state) => state.driverID); // Fetch driverID from Zustand
   const router = useRouter();
 
-  console.log("TopBar is loading user: ",user);
+  //console.log("TopBar is loading user: ",user);
 
   const toggleMode = () => {
     Alert.alert(
@@ -31,7 +31,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
           onPress: () => {
             if (mode === 'passenger') {
               //console.log("DriverID is",driverID);
-              console.log(user?.driverid);
+              //console.log(user?.driverid);
               if (!user.driverid) {
                 // First-time driver without driverID: Redirect to Driver Details
                 router.push('/driver-details');

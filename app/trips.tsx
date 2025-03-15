@@ -3,11 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
-
 import { useTripStore } from '@/store/useTripStore';
+import { useUserMode } from '../store/userModeStore';
 
 const ConfirmScreen: React.FC = () => {
   const router = useRouter();
+  const { mode } = useUserMode(); // Access user mode
 
   // Now three tabs: upcoming, ongoing, and previous
   const [activeTab, setActiveTab] = useState<'upcoming' | 'ongoing' | 'previous'>('upcoming');
@@ -38,8 +39,10 @@ const ConfirmScreen: React.FC = () => {
   // Fetch trips once token is available
   useEffect(() => {
     if (token) {
-      fetchUpcomingTrips();
-      fetchAllUserTrips();
+      if (mode == 'driver') {
+        fetchUpcomingTrips();
+        fetchAllUserTrips();
+      }
     }
   }, [token]);
 
@@ -63,8 +66,9 @@ const ConfirmScreen: React.FC = () => {
       // If the API returns an array directly, use it; otherwise use data.upcomingTrips
       const tripsArray = Array.isArray(data) ? data : data.upcomingTrips || [];
       // Filter out trips with status "completed" from upcoming trips
-      const filteredTrips = tripsArray.filter(trip => trip.status !== 'completed');
-      setUpcomingTrips(filteredTrips);
+      //const filteredTrips = tripsArray.filter(trip => trip.status !== 'completed');
+      //setUpcomingTrips(filteredTrips);
+      setUpcomingTrips(tripsArray);
     } catch (error) {
       console.error('Error fetching upcoming trips:', error);
       Alert.alert('Error', 'Could not fetch upcoming trips.');
@@ -116,7 +120,8 @@ const ConfirmScreen: React.FC = () => {
 
   const renderTrip = ({ item }) => (
     <TouchableOpacity style={styles.tripCard} onPress={() => handleTripPress(item)}>
-      <Text style={styles.tripDestination}>Trip ID: {item.tripid}</Text>
+      <Text style={styles.tripDestination}>From: {item.sourcename}</Text>
+      <Text style={styles.tripDestination}>To: {item.destinationname}</Text>
       <Text style={styles.tripDetails}>
         {formatDate(item.tripdate)} - {item.triptime}
       </Text>
@@ -243,7 +248,7 @@ const styles = StyleSheet.create({
   tripDestination: {
     fontSize: 16,
     color: '#00308F',
-    marginBottom: 5,
+    marginBottom: 20,
   },
   tripDetails: {
     fontSize: 14,

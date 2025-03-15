@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useTripStore } from '@/store/useTripStore';
+import { useUserMode } from '../store/userModeStore';
 
 export default function TripDetails() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
-
-  console.log("Trip Status:", selectedTrip.status);
 
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
@@ -50,9 +48,8 @@ export default function TripDetails() {
         }
 
         const data = await response.json();
-        console.log("Selected Trip Requests:", data);
-        console.log("Number of Passengers:", selectedTrip.numberofpassengers);
         setTripRequests(data.tripRequests);
+        console.log(data);
       } catch (error) {
         console.error('Error fetching trip requests:', error);
       }
@@ -92,6 +89,7 @@ export default function TripDetails() {
   
             // Assume the API returns the updated trip details including updated numberofpassengers
             const updatedTrip = await response.json();
+            console.log("Updated Trip:", updatedTrip);
             useTripStore.setState({ selectedTrip: updatedTrip });
   
             // Also update the specific request's status in local state
@@ -224,21 +222,20 @@ export default function TripDetails() {
     );
   }
 
+  //<Text style={styles.headerTitle}>Trip Details</Text>
+
   return (
     <View style={styles.mainContainer}>
       <View style={styles.headerBackground}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.push('/trips')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Trip Details</Text>
-          <Text style={styles.driver}>{selectedTrip.drivername}</Text>
+          
+          <Text style={styles.driver}>Driver Name: {selectedTrip.drivername}</Text>
         </View>
       </View>
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsHeader}>Trip Detail</Text>
+          <Text style={styles.detailsHeader}>Trip Details</Text>
           <View style={styles.locationItem}>
             <Ionicons name="location-outline" size={20} color="#00308F" />
             <Text style={styles.locationText}>{selectedTrip.sourcename}</Text>
@@ -248,7 +245,7 @@ export default function TripDetails() {
             <Text style={styles.locationText}>{selectedTrip.destinationname}</Text>
           </View>
           <Text style={styles.timeText}>
-            {selectedTrip.tripdate.split('T')[0]} - {selectedTrip.triptime.slice(0, 5)}
+            {selectedTrip?.tripdate?.split('T')[0] || 'N/A'} - {selectedTrip?.triptime?.slice(0, 5) || 'N/A'}
           </Text>
         </View>
 
@@ -308,9 +305,9 @@ export default function TripDetails() {
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#FFFFFF' },
   headerBackground: { backgroundColor: '#00308F', paddingTop: 50, paddingBottom: 30, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 },
-  headerContent: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 },
+  headerContent: { flexDirection: 'column', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 },
   backButton: { marginRight: 10 },
-  headerTitle: { fontSize: 18, color: '#FFFFFF', textAlign: 'center', flex: 1 },
+  headerTitle: { fontSize: 24, color: '#FFFFFF', textAlign: 'center', flex: 1 },
   container: { flex: 1 },
   contentContainer: { padding: 20 },
   detailsContainer: { backgroundColor: '#F7F9FC', padding: 15, borderRadius: 8, marginBottom: 20 },
@@ -339,7 +336,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginTop: 5,
     marginLeft: 10,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   acceptButton: {
     backgroundColor: '#28a745',
