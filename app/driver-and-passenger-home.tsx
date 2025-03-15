@@ -83,7 +83,17 @@ const DriverOrPassengerHome: React.FC = () => {
       date:dateArray               // Array of date strings or objects
     };
 
-    console.log('Submitting Data:', combinedData);
+    if (locationMarker === undefined || destinationMarker === undefined || time === undefined || dateArray === undefined)
+    {
+      Alert.alert('Missing information', 'Enter the information to proceed.');
+      return;
+    }
+
+    else
+    {
+
+    if (currentMode === 'passenger')
+    {
 
     try {
       const response = await fetch('http://10.0.2.2:9000/passenger/getTrips', {
@@ -130,6 +140,11 @@ const DriverOrPassengerHome: React.FC = () => {
       Alert.alert('Error', `Failed to send data: ${error}`);
       console.error('Submission Error:', error);
     }
+  }
+  else{
+    router.push('/driverTripDetails');
+  }
+  }
   };
 
 
@@ -158,7 +173,7 @@ const DriverOrPassengerHome: React.FC = () => {
           <DateTimePicker />
           <Button
             title={currentMode === 'driver' ? 'Next' : 'Go'}
-            onPress={() => (currentMode === 'driver' ? router.push('/driverTripDetails') : handleSubmit())}
+            onPress={() => (handleSubmit())}
           />
         </View>
       </View>
