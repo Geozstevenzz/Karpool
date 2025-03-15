@@ -3,6 +3,8 @@ import { View, Modal, Text, StyleSheet, Image, TouchableOpacity, Button } from '
 import { Calendar } from 'react-native-calendars';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useDateTimeStore } from '../store/dateTImeStore';
+import { useUserMode } from '../store/userModeStore';
+
 
 interface Params {
   selected: boolean;
@@ -14,6 +16,7 @@ export default function DatePickerComponent() {
   const setDates = useDateTimeStore((state) => state.setDate);
   const time = useDateTimeStore((state) => state.time);
   const setTime = useDateTimeStore((state) => state.setTime);
+  const userMode = useUserMode((state) => state.mode)
 
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
@@ -45,16 +48,29 @@ export default function DatePickerComponent() {
     const selectedDate = day.dateString;
     const newDates = { ...dates };
 
-    if (dates[selectedDate]) {
-      delete newDates[selectedDate];
-      setDates(newDates);
-      setSelectedDates(prevDates => prevDates.filter(date => date !== selectedDate)); // Remove date from selected
-    } else {
-      newDates[selectedDate] = { selected: true, color: 'red' };
-      setDates(newDates);
-      setSelectedDates(prevDates => [...prevDates, selectedDate]); // Add date to selected
+    if (userMode === "passenger") {
+      // If the selected date is already chosen, remove it (allow deselection)
+      if (selectedDates.includes(selectedDate)) {
+          setDates({});
+          setSelectedDates([]);
+      } else {
+          setDates({ [selectedDate]: { selected: true, color: 'red' } });
+          setSelectedDates([selectedDate]);
+      }
+  }
+   else {
+        // Drivers can select multiple dates
+        if (dates[selectedDate]) {
+            delete newDates[selectedDate]; // Deselect date
+            setDates(newDates);
+            setSelectedDates(prevDates => prevDates.filter(date => date !== selectedDate));
+        } else {
+            newDates[selectedDate] = { selected: true, color: 'red' };
+            setDates(newDates);
+            setSelectedDates(prevDates => [...prevDates, selectedDate]);
+        }
     }
-  };
+};
 
   return (
     <View style={styles.container}>

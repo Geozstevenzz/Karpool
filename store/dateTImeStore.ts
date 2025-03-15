@@ -4,21 +4,23 @@ interface Params {
     selected: boolean;
     color: string | undefined;
 }
+
 interface DateType {
     [key: string]: Params;
 }
 
-
 type dateTimeStore = {
     dates: DateType;
     time: Date;
-    setDate: (allDates:DateType) => void;
+    setDate: (allDates: DateType) => void;
     setTime: (newTime: Date) => void;
-}
+    reset: () => void;  // New function to reset state
+};
 
-export const useDateTimeStore = create<dateTimeStore>((set) =>({
+export const useDateTimeStore = create<dateTimeStore>((set) => ({
     dates: {},
     time: new Date(),
-    setDate: (allDates) => set(() => ({dates: allDates})),
-    setTime: (newTime) => set(() => ({time: newTime}))
+    setDate: (allDates) => set(() => ({ dates: allDates })),
+    setTime: (newTime) => set(() => ({ time: newTime })),
+    reset: () => set(() => ({ dates: {}, time: new Date() })) // Reset function
 }));

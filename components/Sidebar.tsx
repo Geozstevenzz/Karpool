@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useUserMode } from '../store/userModeStore';
+import { useDateTimeStore } from '../store/dateTImeStore';
 import * as SecureStore from 'expo-secure-store';
 
 interface SidebarProps {
@@ -76,6 +77,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     router.push(route);
   };
 
+  const resetDateTime = useDateTimeStore.getState().reset;
+
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -93,6 +96,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
               await SecureStore.deleteItemAsync('token');
               // Reset mode to "passenger"
               useUserMode.getState().setMode('passenger');
+              // Reset date and time
+            resetDateTime();
               closeSidebar();
               router.replace('/'); // Redirect to index.tsx
             } catch (error) {
