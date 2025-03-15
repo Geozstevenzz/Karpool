@@ -11,6 +11,7 @@ import {
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useUserMode } from '../store/userModeStore';
 import * as SecureStore from 'expo-secure-store';
 
 interface SidebarProps {
@@ -90,6 +91,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           onPress: async () => {
             try {
               await SecureStore.deleteItemAsync('token');
+              // Reset mode to "passenger"
+              useUserMode.getState().setMode('passenger');
               closeSidebar();
               router.replace('/'); // Redirect to index.tsx
             } catch (error) {

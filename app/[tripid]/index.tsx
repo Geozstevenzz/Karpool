@@ -123,18 +123,18 @@ const ConfirmScreen: React.FC = () => {
 
           {/* Driver Info */}
           <View style={styles.driverInfo}>
-            <Pressable onPress={() => alert('Profile Pressed')}>
+            
               <View style={styles.profileSection}>
                 <Text style={styles.driverName}>{trip.username}</Text>
                 <Text style={styles.driverRating}>⭐ 4.5/5 - 13 ratings</Text>
               </View>
-            </Pressable>
+            
             <Pressable onPress={() => alert('Profile Pressed')} style={styles.profile}>
               <Image
                 source={require("../../assets/images/person3.jpeg")}
                 style={styles.profilePic}
               />
-              <Text style={{alignSelf: 'center', marginLeft: 10, fontSize: 16,}}>&gt;</Text>
+              
             </Pressable>
           </View>
 
@@ -145,10 +145,13 @@ const ConfirmScreen: React.FC = () => {
               <Text style={styles.carNumber}>{trip.vehiclenumber}</Text>
               <Text style={styles.carColor}>{trip.vehiclecolor}</Text>
             </View>
+            
+            <Pressable onPress={() => alert('Vehicle Pressed')} style={styles.profile}>
             <Image
               source={require("../../assets/images/Car.png")}
               style={styles.carImage}
             />
+            </Pressable>
           </View>
 
           {/* Passengers and Stops */}
@@ -173,12 +176,10 @@ const ConfirmScreen: React.FC = () => {
               </View>
             </View>
 
-            <Pressable onPress={() => alert('Stops Pressed')}>
               <View style={styles.stopsSection}>
                 <Text style={styles.sectionTitle}>Stops</Text>
-                <Text style={styles.stopsValue}>{trip.numberofstops} &gt;</Text>
+                <Text style={styles.stopsValue}>{trip.numberofstops}</Text>
               </View>
-            </Pressable>
           </View>
 
           {/* Price */}

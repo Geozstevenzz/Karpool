@@ -1,6 +1,6 @@
 // screens/signup.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
 
@@ -14,6 +14,17 @@ export default function Signup() {
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  // Handle Android back button press
+    useEffect(() => {
+      const backAction = () => {
+        router.replace('/'); // Clears the stack and takes user to index
+        return true; // Prevents default behavior
+      };
+  
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+      return () => backHandler.remove();
+    }, []);
 
   const handleSignup = async () => {
     // 1. Check if passwords match
@@ -64,7 +75,7 @@ export default function Signup() {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         {/* Back button */}
-        <TouchableOpacity onPress={() => router.push('/')}>
+        <TouchableOpacity onPress={() => router.replace('/')}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
         <Text style={styles.header}>Create an account.</Text>
@@ -173,7 +184,7 @@ export default function Signup() {
       {/* Login Link */}
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/login')}>
+        <TouchableOpacity onPress={() => router.replace('/login')}>
           <Text style={styles.loginLink}>Login</Text>
         </TouchableOpacity>
       </View>

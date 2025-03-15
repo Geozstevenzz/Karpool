@@ -1,16 +1,41 @@
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, BackHandler, Alert } from 'react-native';
+import { useRouter, usePathname } from 'expo-router'; 
 
-import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router'; 
 export default function HomeScreen() {
-  const router = useRouter(); 
+  const router = useRouter();
+  const pathname = usePathname(); // Tracks the current route
+
+  // Handle Android back press
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (pathname === '/') {
+        // If on the index page, ask to exit
+        Alert.alert(
+          'Exit App',
+          'Are you sure you want to exit?',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Exit', onPress: () => BackHandler.exitApp() },
+          ]
+        );
+        return true; // Prevent default behavior
+      } else {
+        // If on any other page, navigate back
+        router.back();
+        return true; // Prevent default behavior
+      }
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+    return () => backHandler.remove(); // Cleanup on component unmount
+  }, [pathname, router]);
 
   return (
     <View style={styles.container}>
       <View style={styles.circle} />
       <Image source={require('@/assets/images/bmw.webp')} style={styles.image} />
 
-      {}
       <View style={styles.textContainer}>
         <Text style={styles.text}>Karpool</Text>
         <Image source={require('@/assets/images/people-in-car.png')} style={styles.carImage} />
@@ -19,17 +44,16 @@ export default function HomeScreen() {
       <Text style={styles.subtext}>Get rid of transportation problems!</Text>
       <Text style={styles.footer}>Let's get started.</Text>
 
-      {}
       <TouchableOpacity 
         style={[styles.button, styles.loginButton]} 
-        onPress={() => router.push('/login')} 
+        onPress={() => router.replace('/login')} 
       >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       
       <TouchableOpacity 
         style={[styles.button, styles.signupButton]} 
-        onPress={() => router.push('/signup')}
+        onPress={() => router.replace('/signup')}
       >
         <Text style={styles.buttonText}>Signup</Text>
       </TouchableOpacity>
@@ -69,7 +93,6 @@ const styles = StyleSheet.create({
     left: 20,
   },
   text: {
-   
     fontSize: 32,
     color: '#FFFFFF',
   },
@@ -80,7 +103,6 @@ const styles = StyleSheet.create({
     top: 11,
   },
   subtext: {
-   
     fontSize: 24,
     color: '#FFFFFF',
     position: 'absolute',
@@ -88,7 +110,6 @@ const styles = StyleSheet.create({
     left: 20,
   },
   footer: {
-   
     fontSize: 18,
     color: '#FFFFFF',
     position: 'absolute',
@@ -113,7 +134,6 @@ const styles = StyleSheet.create({
     bottom: 40,
   },
   buttonText: {
-    
     fontSize: 20,
     color: '#1485EE',
     fontWeight: '600',

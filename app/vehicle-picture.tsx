@@ -83,11 +83,12 @@ export default function VehiclePicture() {
     }
 
     console.log('Vehicle picture saved:', vehicleImage);
+    router.back();
 
-    router.push({
+    /*router.push({
       pathname: '/driver-and-passenger-home',
       params: { ...params, vehicleImage }, // Pass received and new params
-    });
+    });*/
   };
 
   return (
@@ -115,10 +116,6 @@ export default function VehiclePicture() {
         onPress={handleSaveVehiclePicture}
       >
         <Text style={styles.buttonText}>Save Vehicle Picture</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
-        <Text style={styles.backLinkText}>Go Back</Text>
       </TouchableOpacity>
     </View>
   );

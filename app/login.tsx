@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Alert,
+  BackHandler,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,17 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+
+  // Handle Android back button press
+  useEffect(() => {
+    const backAction = () => {
+      router.replace('/'); // Clears the stack and takes user to index
+      return true; // Prevents default behavior
+    };
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () => backHandler.remove();
+  }, []);
 
   const handleLogin = async () => {
     console.log('Login button pressed', { email, password, rememberMe });
@@ -59,7 +71,7 @@ export default function Login() {
       }
 
       // Navigate to the next screen
-      router.push('/driver-and-passenger-home');
+      router.replace('/driver-and-passenger-home');
     } catch (error) {
       console.error('Error during login:', error);
       Alert.alert('Login Error', error.message);
@@ -69,7 +81,7 @@ export default function Login() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity onPress={() => router.push('/')}>
+        <TouchableOpacity onPress={() => router.replace('/')}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
         <Text style={styles.header}>Hi, Welcome Back!</Text>
@@ -144,13 +156,14 @@ export default function Login() {
       {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/signup')}>
+        <TouchableOpacity onPress={() => router.replace('/signup')}>
           <Text style={styles.signupLink}>Sign Up</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
 
 /* -- STYLES -- */
 const styles = StyleSheet.create({

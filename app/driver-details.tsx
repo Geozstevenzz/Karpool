@@ -95,7 +95,7 @@ export default function DriverDetails() {
       if (response.ok) {
         Alert.alert('Success', 'Details submitted successfully!');
         setMode && setMode('driver');
-        router.push({
+        router.replace({
           pathname: '/vehicle-picture',
           params: { email, phoneNumber },
         });
@@ -110,7 +110,7 @@ export default function DriverDetails() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity onPress={() => router.push('/driver-and-passenger-home')}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#00308F" />
         </TouchableOpacity>
         <Text style={styles.header}>Enter Driver Details</Text>

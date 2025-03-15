@@ -106,8 +106,8 @@ const HomeScreen: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        Alert.alert('Success', `Response from server: ${JSON.stringify(result)}`);
-        console.log('Success');
+        Alert.alert('Success', 'Trip created successfully!');
+        console.log('Success', result);
       } else {
         Alert.alert('Error', `Server returned status: ${response.status}`);
         console.log(`Error: Server returned status: ${response.status}`);
@@ -126,14 +126,7 @@ const HomeScreen: React.FC = () => {
       <View style={styles.bottomView}>
         <Text style={styles.text}>Trip Details</Text>
         <View style={styles.pressableContainer}>
-          <TouchableOpacity onPress={() => {}} style={styles.pressable}>
-            <Image
-              source={require('../assets/images/car_logo.png')}
-              style={styles.icon}
-            />
-            <Text>Your Car</Text>
-            <TextInput style={styles.input} />
-          </TouchableOpacity>
+
 
           <TouchableOpacity onPress={() => {}} style={styles.pressable}>
             <Image
@@ -182,7 +175,7 @@ const HomeScreen: React.FC = () => {
           title="Go!"
           onPress={() => {
             handleSubmit();
-            router.push('/driver-and-passenger-home');
+            router.back();
           }}
         />
       </View>

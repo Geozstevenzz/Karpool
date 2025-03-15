@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, Button, Animated } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Alert, Button, Animated, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 import LocationPicker from '../components/LocationPicker';
 import DateTimePicker from '../components/DatePickerComponent';
@@ -34,6 +35,16 @@ const DriverOrPassengerHome: React.FC = () => {
   const vehicleID = useVehicleStore((state) => state.vehicleID);
 
   const dateArray = Object.keys(dates)[0];
+
+  useFocusEffect(
+    useCallback(() => {
+      // Disable back button when on this page
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
+  
+      // Re-enable back button when leaving the page
+      return () => backHandler.remove();
+    }, [])
+  );
 
   // Load token from SecureStore
   const [token, setToken] = useState<string | null>(null);
@@ -87,11 +98,31 @@ const DriverOrPassengerHome: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
-        useTripStore.getState().setTrips(result);
-        Alert.alert('Success', `Trips received: ${JSON.stringify(result)}`);
-        console.log(result);
+      
+        if (result.length === 0) {
+          Alert.alert('No Trips Available', 'There are no matching trips at the moment. Please try again later.');
+          return;
+        }
+
+      // Ensure we only keep trips where the user is NOT the driver
+      const filteredTrips = result.filter((trip) => {
+        return trip.driverid !== user?.driverid; // Compare as numbers
+      });
+
+      
+      if (filteredTrips.length === 0) {
+        Alert.alert('No Trips Available', 'There are no matching trips at the moment. Please try again later.');
+        return; // Stop execution if no trips are found
+      }
+
+        useTripStore.getState().setTrips(filteredTrips);
+      
+        //useTripStore.getState().setTrips(result);
+        //Alert.alert('Success', `Trips received: ${JSON.stringify(result)}`);
+
         router.push('/confirm');
-      } else {
+      }
+       else {
         Alert.alert('Error', `Server returned status: ${response.status}`);
         console.error(`Server Error: ${response.status}`);
       }
@@ -100,6 +131,7 @@ const DriverOrPassengerHome: React.FC = () => {
       console.error('Submission Error:', error);
     }
   };
+
 
   const toggleSidebar = (visible: boolean) => {
     setIsSidebarVisible(visible);
