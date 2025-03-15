@@ -10,7 +10,7 @@ const ConfirmScreen: React.FC = () => {
   const router = useRouter();
   const { mode } = useUserMode(); // Access user mode
 
-  // Now three tabs: upcoming, ongoing, and previous
+  // Three tabs: upcoming, ongoing, and previous
   const [activeTab, setActiveTab] = useState<'upcoming' | 'ongoing' | 'previous'>('upcoming');
 
   // States for fetched trips
@@ -39,16 +39,15 @@ const ConfirmScreen: React.FC = () => {
   // Fetch trips once token is available
   useEffect(() => {
     if (token) {
-      if (mode == 'driver') {
-        fetchUpcomingTrips();
-        fetchAllUserTrips();
-      }
+      fetchTrips();
     }
   }, [token]);
 
-  const fetchUpcomingTrips = async () => {
+  // Fetch all trips and categorize them by status
+  const fetchTrips = async () => {
     try {
-      const response = await fetch('http://10.0.2.2:9000/user/upcomingTrips', {
+      // Fetch upcoming trips
+      const upcomingResponse = await fetch('http://10.0.2.2:9000/user/upcomingTrips', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -57,28 +56,12 @@ const ConfirmScreen: React.FC = () => {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
+      if (!upcomingResponse.ok) {
+        throw new Error(`Server returned status: ${upcomingResponse.status} for upcoming trips`);
       }
 
-      const data = await response.json();
-      console.log("Trips (Upcoming): ", data);
-      // If the API returns an array directly, use it; otherwise use data.upcomingTrips
-      const tripsArray = Array.isArray(data) ? data : data.upcomingTrips || [];
-      // Filter out trips with status "completed" from upcoming trips
-      //const filteredTrips = tripsArray.filter(trip => trip.status !== 'completed');
-      //setUpcomingTrips(filteredTrips);
-      setUpcomingTrips(tripsArray);
-    } catch (error) {
-      console.error('Error fetching upcoming trips:', error);
-      Alert.alert('Error', 'Could not fetch upcoming trips.');
-    }
-  };
-
-  // Fetch all user trips then filter them into ongoing and previous trips
-  const fetchAllUserTrips = async () => {
-    try {
-      const response = await fetch('http://10.0.2.2:9000/user/allUserTrips', {
+      // Fetch all trips (completed trips)
+      const allTripsResponse = await fetch('http://10.0.2.2:9000/user/allUserTrips', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -86,23 +69,41 @@ const ConfirmScreen: React.FC = () => {
           'X-Platform': 'mobile',
         },
       });
-  
-      if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
+
+      if (!allTripsResponse.ok) {
+        throw new Error(`Server returned status: ${allTripsResponse.status} for all trips`);
       }
-  
-      const data = await response.json();
-      console.log("All User Trips:", data);
-      const tripsArray = Array.isArray(data) ? data : data.allTrips || [];
-      // Ongoing trips: only trips with status "ongoing"
-      const ongoingTripsArray = tripsArray.filter(trip => trip.status === 'ongoing');
-      // Previous trips: we assume these are completed trips
-      const previousTripsArray = tripsArray.filter(trip => trip.status === 'completed');
-      setOngoingTrips(ongoingTripsArray);
-      setPreviousTrips(previousTripsArray);
+
+      // Process responses
+      const upcomingData = await upcomingResponse.json();
+      const allTripsData = await allTripsResponse.json();
+
+      console.log("Upcoming trips response:", upcomingData);
+      console.log("All trips response:", allTripsData);
+
+      // Extract trip arrays
+      const upcomingTripsArray = Array.isArray(upcomingData) ? upcomingData : upcomingData.upcomingTrips || [];
+      const allTripsArray = Array.isArray(allTripsData) ? allTripsData : allTripsData.allTrips || [];
+
+      // Filter upcoming trips (those with 'upcoming' status)
+      const upcomingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'upcoming');
+      
+      // Filter ongoing trips (those with 'ongoing' status)
+      const ongoingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'ongoing');
+      
+      // Get completed trips from allTripsArray (all completed trips are in allTripsArray)
+      const completedTrips = allTripsArray.filter(trip => trip.status === 'completed');
+
+      console.log("Filtered upcoming trips:", upcomingTripsFiltered.length);
+      console.log("Filtered ongoing trips:", ongoingTripsFiltered.length);
+      console.log("Completed trips:", completedTrips.length);
+
+      setUpcomingTrips(upcomingTripsFiltered);
+      setOngoingTrips(ongoingTripsFiltered);
+      setPreviousTrips(completedTrips);
     } catch (error) {
-      console.error('Error fetching all user trips:', error);
-      Alert.alert('Error', 'Could not fetch user trips.');
+      console.error('Error fetching trips:', error);
+      Alert.alert('Error', 'Could not fetch trips. Please try again later.');
     }
   };
 
@@ -130,14 +131,19 @@ const ConfirmScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  let tripData;
-  if (activeTab === 'upcoming') {
-    tripData = upcomingTrips;
-  } else if (activeTab === 'ongoing') {
-    tripData = ongoingTrips;
-  } else {
-    tripData = previousTrips;
-  }
+  // Get the appropriate trip data based on active tab
+  const getActiveTabData = () => {
+    switch(activeTab) {
+      case 'upcoming':
+        return upcomingTrips;
+      case 'ongoing':
+        return ongoingTrips;
+      case 'previous':
+        return previousTrips;
+      default:
+        return [];
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -179,10 +185,15 @@ const ConfirmScreen: React.FC = () => {
 
       {/* Trip List */}
       <FlatList
-        data={tripData}
+        data={getActiveTabData()}
         keyExtractor={(item) => item.tripid.toString()}
         renderItem={renderTrip}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No trips found</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -248,12 +259,21 @@ const styles = StyleSheet.create({
   tripDestination: {
     fontSize: 16,
     color: '#00308F',
-    marginBottom: 20,
+    marginBottom: 5,
   },
   tripDetails: {
     fontSize: 14,
     color: '#666',
   },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 30,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+  }
 });
 
 export default ConfirmScreen;

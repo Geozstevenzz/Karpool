@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet, Modal, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Modal, FlatList, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMapStore } from '../store/mapStore';
+import * as SecureStore from 'expo-secure-store';
 
 const LocationPicker: React.FC = () => {
   const router = useRouter();
@@ -10,15 +11,72 @@ const LocationPicker: React.FC = () => {
   const setDestinationMarker = useMapStore((state) => state.setDestinationMarker);
   const locationName = useMapStore((state) => state.locationName); 
   const destinationName = useMapStore((state) => state.destinationName); 
-  const bookmarks = useMapStore((state) => state.bookmarks); 
   const selectBookmark = useMapStore((state) => state.selectBookmark); 
   const toggleFitToMarkers = useMapStore((state) => state.toggleFitToMarkers); 
 
   const [modalVisible, setModalVisible] = useState(false); 
   const [currentType, setCurrentType] = useState<"start" | "destination" | null>(null);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const defaultStartText = "Select Start Location";
   const defaultDestinationText = "Select Destination";
+
+  // Load token from secure storage
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync('userToken');
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error('Error retrieving token from SecureStore:', error);
+      }
+    };
+    loadToken();
+  }, []);
+
+  // Fetch bookmarks when modal opens or token changes
+  const fetchBookmarks = async () => {
+    if (!token) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch("http://10.0.2.2:9000/user/bookmark/all", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Platform": "mobile",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch bookmarks. Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Fetched bookmarks:", data);
+      setBookmarks(data.bookmarks || []);
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error);
+      setError('Failed to load bookmarks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch bookmarks when the modal opens
+  useEffect(() => {
+    if (modalVisible && token) {
+      fetchBookmarks();
+    }
+  }, [modalVisible, token]);
 
   const onPressLocation = (type: "start" | "destination") => {
     setChoice(type === "start" ? 0 : 1);
@@ -47,6 +105,10 @@ const LocationPicker: React.FC = () => {
     // Ensure the map adjusts to show both markers
     toggleFitToMarkers(true); // Set the map to fit both markers after selection
     setModalVisible(false); // Close modal after selecting bookmark
+  };
+
+  const refreshBookmarks = () => {
+    fetchBookmarks();
   };
 
   return (
@@ -84,18 +146,40 @@ const LocationPicker: React.FC = () => {
               <Text style={styles.modalButtonText}>Select on Map</Text>
             </TouchableOpacity>
 
-            <Text style={styles.modalTitle}>Bookmarks</Text>
+            <View style={styles.bookmarksHeader}>
+              <Text style={styles.modalTitle}>Bookmarks</Text>
+              <TouchableOpacity onPress={refreshBookmarks} style={styles.refreshButton}>
+                <Text style={styles.refreshText}>Refresh</Text>
+              </TouchableOpacity>
+            </View>
+
             {/* Displaying Bookmarked Locations */}
-            <FlatList
-              data={bookmarks}
-              keyExtractor={(item) => item.name}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.bookmarkItem} onPress={() => onSelectBookmark(item)}>
-                  <Text style={styles.bookmarkText}>{item.name}</Text>
+            {loading ? (
+              <ActivityIndicator size="large" color="#007BFF" style={styles.loader} />
+            ) : error ? (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity onPress={fetchBookmarks} style={styles.retryButton}>
+                  <Text style={styles.retryText}>Retry</Text>
                 </TouchableOpacity>
-              )}
-              ListEmptyComponent={<Text style={styles.emptyText}>No bookmarks available.</Text>}
-            />
+              </View>
+            ) : (
+              <FlatList
+                data={bookmarks}
+                keyExtractor={(item, index) => `${item.name}-${index}`}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    style={styles.bookmarkItem} 
+                    onPress={() => onSelectBookmark(item)}
+                  >
+                    <Text style={styles.bookmarkText}>{item.location}</Text>
+                    <Text style={styles.bookmarkAddress} numberOfLines={1}>{item.address}</Text>
+                  </TouchableOpacity>
+                )}
+                ListEmptyComponent={<Text style={styles.emptyText}>No bookmarks available.</Text>}
+                style={styles.bookmarksList}
+              />
+            )}
 
             <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalVisible(false)}>
               <Text style={styles.modalCancelText}>Cancel</Text>
@@ -146,6 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     alignItems: 'center',
+    maxHeight: '80%',
   },
   modalTitle: {
     fontSize: 18,
@@ -166,23 +251,71 @@ const styles = StyleSheet.create({
   },
   modalCancelButton: {
     marginTop: 10,
+    paddingVertical: 5,
   },
   modalCancelText: {
     color: 'red',
     fontSize: 16,
   },
+  bookmarksHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 5,
+  },
+  refreshButton: {
+    padding: 5,
+  },
+  refreshText: {
+    color: '#007BFF',
+    fontSize: 14,
+  },
+  bookmarksList: {
+    width: '100%',
+    maxHeight: 200,
+  },
   bookmarkItem: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    width: '100%',
   },
   bookmarkText: {
     fontSize: 16,
+    fontWeight: '500',
+  },
+  bookmarkAddress: {
+    fontSize: 14,
+    color: 'gray',
+    marginTop: 2,
   },
   emptyText: {
     fontSize: 14,
     color: 'gray',
     textAlign: 'center',
+    padding: 10,
+  },
+  loader: {
+    marginVertical: 20,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    padding: 10,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  retryButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 8,
+    borderRadius: 5,
+  },
+  retryText: {
+    color: '#007BFF',
+    fontSize: 14,
   },
 });
 

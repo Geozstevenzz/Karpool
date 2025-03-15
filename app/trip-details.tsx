@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useTripStore } from '@/store/useTripStore';
@@ -10,9 +10,11 @@ export default function TripDetails() {
   const router = useRouter();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
 
+  console.log("Selected Trip:", selectedTrip);
+
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
-  // New state to track whether the trip has started
+  // New state to track whether the trip has started (not used for button label anymore)
   const [tripStarted, setTripStarted] = useState(false);
 
   useEffect(() => {
@@ -90,7 +92,7 @@ export default function TripDetails() {
             // Assume the API returns the updated trip details including updated numberofpassengers
             const updatedTrip = await response.json();
             console.log("Updated Trip:", updatedTrip);
-            useTripStore.setState({ selectedTrip: updatedTrip });
+            useTripStore.setState({ selectedTrip: { ...selectedTrip, ...updatedTrip } });
   
             // Also update the specific request's status in local state
             setTripRequests((prevRequests) =>
@@ -150,8 +152,8 @@ export default function TripDetails() {
       return;
     }
     
-    if (!tripStarted) {
-      // Trip not started yet, confirm start
+    if (selectedTrip.status === 'upcoming') {
+      // Confirm starting trip
       Alert.alert("Start Trip", "Are you sure you want to start this trip?", [
         { text: "Cancel", style: "cancel" },
         {
@@ -173,7 +175,8 @@ export default function TripDetails() {
               }
               const data = await response.json();
               console.log("Start Trip Response:", data);
-              setTripStarted(true);
+              // Update the trip status in selectedTrip to 'ongoing'
+              useTripStore.setState({ selectedTrip: { ...selectedTrip, status: 'ongoing' } });
             } catch (error) {
               console.error("Error starting trip:", error);
               Alert.alert("Error", "Could not start trip. Please try again.");
@@ -181,8 +184,8 @@ export default function TripDetails() {
           },
         },
       ]);
-    } else {
-      // Trip already started, confirm stop
+    } else if (selectedTrip.status === 'ongoing') {
+      // Confirm stopping trip
       Alert.alert("Stop Trip", "Are you sure you want to end this trip?", [
         { text: "Cancel", style: "cancel" },
         {
@@ -200,10 +203,10 @@ export default function TripDetails() {
               if (!response.ok) {
                 throw new Error(`Failed to complete trip. Status: ${response.status}`);
               }
-
               const data = await response.json();
               console.log("Complete Trip Response:", data);
-              setTripStarted(false);
+              // Update the trip status in selectedTrip to 'completed'
+              useTripStore.setState({ selectedTrip: { ...selectedTrip, status: 'completed' } });
             } catch (error) {
               console.error("Error stopping trip:", error);
               Alert.alert("Error", "Could not end trip. Please try again.");
@@ -222,13 +225,14 @@ export default function TripDetails() {
     );
   }
 
-  //<Text style={styles.headerTitle}>Trip Details</Text>
-
   return (
     <View style={styles.mainContainer}>
       <View style={styles.headerBackground}>
         <View style={styles.headerContent}>
-          
+          <TouchableOpacity onPress={() => router.push('/trips')} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Trip Details</Text>
           <Text style={styles.driver}>Driver Name: {selectedTrip.drivername}</Text>
         </View>
       </View>
@@ -245,7 +249,7 @@ export default function TripDetails() {
             <Text style={styles.locationText}>{selectedTrip.destinationname}</Text>
           </View>
           <Text style={styles.timeText}>
-            {selectedTrip?.tripdate?.split('T')[0] || 'N/A'} - {selectedTrip?.triptime?.slice(0, 5) || 'N/A'}
+            {selectedTrip.tripdate ? selectedTrip.tripdate.split('T')[0] : 'No Date'} - {selectedTrip.triptime ? selectedTrip.triptime.slice(0, 5) : 'No Time'}
           </Text>
         </View>
 
@@ -279,10 +283,16 @@ export default function TripDetails() {
           )}
         </View>
 
-        {/* Render Start/Stop Trip Button if trip is not completed */}
-        {selectedTrip.status !== 'completed' && selectedTrip.numberofpassengers > 0 && (
+        {/* Render Start/Stop Trip Button based on trip status */}
+        {console.log("Selected Trip Passengers:", selectedTrip.numberofpassengers)}
+        {selectedTrip.status === 'upcoming' && selectedTrip.numberofpassengers > 0 && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
-            <Text style={styles.buttonText}>{tripStarted ? "Stop Trip" : "Start Trip"}</Text>
+            <Text style={styles.buttonText}>Start Trip</Text>
+          </TouchableOpacity>
+        )}
+        {selectedTrip.status === 'ongoing' && (
+          <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
+            <Text style={styles.buttonText}>Stop Trip</Text>
           </TouchableOpacity>
         )}
 
@@ -306,8 +316,8 @@ const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#FFFFFF' },
   headerBackground: { backgroundColor: '#00308F', paddingTop: 50, paddingBottom: 30, borderBottomLeftRadius: 20, borderBottomRightRadius: 20 },
   headerContent: { flexDirection: 'column', alignItems: 'center', paddingHorizontal: 20, marginBottom: 20 },
-  backButton: { marginRight: 10 },
-  headerTitle: { fontSize: 24, color: '#FFFFFF', textAlign: 'center', flex: 1 },
+  backButton: { alignSelf: 'flex-start', marginBottom: 10 },
+  headerTitle: { fontSize: 18, color: '#FFFFFF', textAlign: 'center', flex: 1 },
   container: { flex: 1 },
   contentContainer: { padding: 20 },
   detailsContainer: { backgroundColor: '#F7F9FC', padding: 15, borderRadius: 8, marginBottom: 20 },
@@ -331,13 +341,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
-  driver: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginTop: 5,
-    marginLeft: 10,
-    textAlign: 'center',
-  },
+  driver: { fontSize: 16, color: '#FFFFFF', marginTop: 5, marginLeft: 10, textAlign: 'center' },
   acceptButton: {
     backgroundColor: '#28a745',
     paddingVertical: 12,
@@ -357,11 +361,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flex: 1,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   startTripButton: {
     backgroundColor: '#FFA500',
     paddingVertical: 12,
@@ -371,9 +371,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 20,
   },
-  completedContainer: {
-    marginTop: 20,
-  },
+  completedContainer: { marginTop: 20 },
   completedButton: {
     backgroundColor: '#28a745',
     paddingVertical: 12,
@@ -383,11 +381,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 10,
   },
-  completedButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  completedButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   reviewButton: {
     backgroundColor: '#007bff',
     paddingVertical: 12,
@@ -396,11 +390,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reviewButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  reviewButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 
 export default TripDetails;

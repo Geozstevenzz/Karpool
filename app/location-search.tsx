@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -7,10 +7,14 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
+  Alert,
 } from "react-native";
-import axios from "axios";
 import { useRouter } from "expo-router";
 import { useMapStore } from "@/store/mapStore";
+import * as SecureStore from "expo-secure-store"; // for retrieving token
+
+// NEW: Import your user store
+import { useUserStore } from "@/store/userStore";
 
 const LocationSearchScreen: React.FC = () => {
   const [query, setQuery] = useState("");
@@ -18,23 +22,79 @@ const LocationSearchScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  // Access map store actions/props (and also the current markers)
   const {
     choice,
+    locationMarker,
+    destinationMarker,
     setLocationMarker,
     setDestinationMarker,
     setLocationName,
     setDestinationName,
-    addBookmark,
-    removeBookmark,
-    bookmarks,
   } = useMapStore();
 
-  // Function to check if a location is already bookmarked
-  const isBookmarked = (name: string) => {
-    return bookmarks.some((bookmark) => bookmark.name === name);
+  // Local state for server bookmarks
+  const [bookmarks, setBookmarks] = useState([]);
+
+  // Retrieve user data (assuming user has 'userid')
+  const { user } = useUserStore();
+  const userID = user?.userid; // Adjust if user store structure is different
+
+  // We'll store the token from SecureStore
+  const [token, setToken] = useState<string | null>(null);
+
+  // Retrieve the token on mount
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const storedToken = await SecureStore.getItemAsync("userToken");
+        if (storedToken) {
+          setToken(storedToken);
+        }
+      } catch (error) {
+        console.error("Error retrieving token:", error);
+      }
+    };
+    loadToken();
+  }, []);
+
+  // Once we have a token and a valid userID, fetch bookmarks from the server
+  useEffect(() => {
+    if (token && userID) {
+      fetchBookmarks();
+    }
+  }, [token, userID]);
+
+  // Function to fetch bookmarks from the server using native fetch
+  const fetchBookmarks = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:9000/user/bookmark/all", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Platform": "mobile",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Bookmarks from server:", data);
+      setBookmarks(data.bookmarks || []);
+    } catch (error) {
+      console.error("Error fetching bookmarks:", error);
+      Alert.alert("Error", "Could not fetch bookmarks.");
+    }
   };
 
-  // Function to search locations
+  // Check if a location is already bookmarked (matching server's 'location' field)
+  const isBookmarked = (locationName: string) => {
+    return bookmarks.some((bm) => bm.location === locationName);
+  };
+
+  // Function to search locations using Nominatim
   const searchLocation = async () => {
     if (!query.trim()) {
       alert("Please enter a location to search!");
@@ -43,10 +103,13 @@ const LocationSearchScreen: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+          query
+        )}&format=json&addressdetails=1&limit=5`
       );
-      setResults(response.data);
+      const data = await response.json();
+      setResults(data);
     } catch (error) {
       console.error("Error fetching location:", error);
       alert("Something went wrong while fetching the locations.");
@@ -80,20 +143,96 @@ const LocationSearchScreen: React.FC = () => {
     router.replace("/driver-and-passenger-home");
   };
 
-  // Function to toggle bookmark
-  const toggleBookmark = (item) => {
-    const location = {
-      name: item.display_name,
-      coordinates: {
-        latitude: parseFloat(item.lat),
-        longitude: parseFloat(item.lon),
-      },
-    };
+  // Function to create a bookmark on the server using fetch
+  const createBookmarkOnServer = async (locationName: string) => {
+    if (!userID) {
+      Alert.alert("Error", "No user ID found.");
+      return;
+    }
 
-    if (isBookmarked(location.name)) {
-      removeBookmark(location.name);
+    // Get the current coordinates from the map store based on the choice
+    let coordinates = null;
+    if (choice === 0) {
+      coordinates = locationMarker;
+    } else if (choice === 1) {
+      coordinates = destinationMarker;
+    }
+
+    try {
+      console.log("User ID:", userID);
+      console.log("Location Name:", locationName);
+      console.log("Coordinates:", coordinates);
+      const response = await fetch("http://10.0.2.2:9000/user/bookmark/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Platform": "mobile",
+        },
+        // Now sending latitude and longitude along with location
+        body: JSON.stringify({
+          userid: userID,
+          location: locationName,
+          coordinates
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Bookmark creation response:", data);
+      // Re-fetch bookmarks to update local list
+      fetchBookmarks();
+    } catch (error) {
+      console.error("Error creating bookmark:", error);
+      Alert.alert("Error", "Could not create bookmark.");
+    }
+  };
+
+  // Function to delete a bookmark from the server using fetch
+  const deleteBookmarkOnServer = async (bookmarkid: number) => {
+    try {
+      const response = await fetch("http://10.0.2.2:9000/user/bookmark/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-Platform": "mobile",
+        },
+        body: JSON.stringify({ bookmarkid }),
+      });
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+      const data = await response.json();
+      console.log("Bookmark deletion response:", data);
+      // Re-fetch bookmarks
+      fetchBookmarks();
+    } catch (error) {
+      console.error("Error deleting bookmark:", error);
+      Alert.alert("Error", "Could not delete bookmark.");
+    }
+  };
+
+  // Helper to find a bookmark by location name
+  const getBookmarkIdByLocation = (locationName: string): number | null => {
+    const found = bookmarks.find((bm) => bm.location === locationName);
+    return found ? found.bookmarkid : null;
+  };
+
+  // Function to toggle bookmark (create if not found, delete if found)
+  const toggleBookmark = (item) => {
+    const locationName = item.display_name;
+
+    if (isBookmarked(locationName)) {
+      const bookmarkId = getBookmarkIdByLocation(locationName);
+      if (bookmarkId) {
+        deleteBookmarkOnServer(bookmarkId);
+      } else {
+        console.warn("Could not find bookmark ID for location:", locationName);
+      }
     } else {
-      addBookmark(location.name, location.coordinates);
+      createBookmarkOnServer(locationName);
     }
   };
 
@@ -116,13 +255,13 @@ const LocationSearchScreen: React.FC = () => {
         <Text style={styles.bookmarksTitle}>Bookmarks</Text>
         <FlatList
           data={bookmarks}
-          keyExtractor={(item) => item.name}
+          keyExtractor={(item) => item.bookmarkid.toString()}
           renderItem={({ item }) => (
             <View style={styles.bookmarkItem}>
-              <Text style={styles.bookmarkText}>{item.name}</Text>
+              <Text style={styles.bookmarkText}>{item.location}</Text>
               <TouchableOpacity
                 style={styles.removeBookmarkButton}
-                onPress={() => removeBookmark(item.name)}
+                onPress={() => deleteBookmarkOnServer(item.bookmarkid)}
               >
                 <Text style={styles.removeBookmarkText}>Remove</Text>
               </TouchableOpacity>
@@ -156,7 +295,9 @@ const LocationSearchScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         )}
-        ListEmptyComponent={!loading && <Text style={styles.emptyText}>No results found. Try again!</Text>}
+        ListEmptyComponent={
+          !loading && <Text style={styles.emptyText}>No results found. Try again!</Text>
+        }
       />
     </View>
   );
