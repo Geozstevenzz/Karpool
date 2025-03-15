@@ -71,45 +71,64 @@ const ConfirmScreen: React.FC = () => {
     );
   }
 
-  const handleRequestRide = async () => {
-    try {
-      // Get the user token from SecureStore
-      const token = await SecureStore.getItemAsync('userToken');
-      if (!token) {
-        Alert.alert('Error', 'No token found. Please log in again.');
-        return;
-      }
-
-      // Make the POST request to your endpoint using the tripId from selectedTripStore
-      const response = await fetch('http://10.0.2.2:9000/passenger/tripJoinReq', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-          'X-Platform': 'mobile',
+  const handleRequestRide = () => {
+    Alert.alert(
+      "Confirm Request",
+      "Are you sure you want to request for this ride?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
         },
-        body: JSON.stringify({
-          tripId: selectedTripId,    // Using the tripId from selectedTripStore
-          passengerId, // from the user store
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server returned status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Join Request Response:', data);
-
-      // Switch button text to "Requested"
-      setButtonText('Requested');
-      // Alert user that the request has gone to the driver
-      Alert.alert('Request Sent', 'Your request has gone to the driver!');
-    } catch (error) {
-      console.error('Error requesting ride:', error);
-      Alert.alert('Error', 'Failed to request ride. Please try again.');
-    }
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              // Get the user token from SecureStore
+              const token = await SecureStore.getItemAsync("userToken");
+              if (!token) {
+                Alert.alert("Error", "No token found. Please log in again.");
+                return;
+              }
+  
+              // Make the POST request to your endpoint using the tripId from selectedTripStore
+              const response = await fetch(
+                "http://10.0.2.2:9000/passenger/tripJoinReq",
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                    "X-Platform": "mobile",
+                  },
+                  body: JSON.stringify({
+                    tripId: selectedTripId, // Using the tripId from selectedTripStore
+                    passengerId, // from the user store
+                  }),
+                }
+              );
+  
+              if (!response.ok) {
+                throw new Error(`Server returned status: ${response.status}`);
+              }
+  
+              const data = await response.json();
+              console.log("Join Request Response:", data);
+  
+              // Switch button text to "Requested"
+              setButtonText("Requested");
+              // Alert user that the request has gone to the driver
+              Alert.alert("Request Sent", "Your request has gone to the driver!");
+            } catch (error) {
+              console.error("Error requesting ride:", error);
+              Alert.alert("Error", "Failed to request ride. Please try again.");
+            }
+          },
+        },
+      ]
+    );
   };
+  
 
   return (
     <View style={styles.container}>
