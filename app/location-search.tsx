@@ -120,11 +120,11 @@ const LocationSearchScreen: React.FC = () => {
 
   // Function to handle location selection
   const handleLocationSelect = (item) => {
-    const selectedLocation = {
-      latitude: parseFloat(item.lat),
-      longitude: parseFloat(item.lon),
-      name: item.display_name,
-    };
+  const selectedLocation = {
+    latitude: typeof item.latitude === "number" ? item.latitude : parseFloat(item.lat),
+    longitude: typeof item.longitude === "number" ? item.longitude : parseFloat(item.lon),
+    name: item.display_name || item.location,
+  };
 
     if (choice === 0) {
       setLocationMarker({
@@ -140,23 +140,23 @@ const LocationSearchScreen: React.FC = () => {
       setDestinationName(selectedLocation.name);
     }
 
-    router.replace("/driver-and-passenger-home");
+    router.back();
   };
 
   // Function to create a bookmark on the server using fetch
-  const createBookmarkOnServer = async (locationName: string) => {
+  const createBookmarkOnServer = async (locationName, coordinates) => {
     if (!userID) {
       Alert.alert("Error", "No user ID found.");
       return;
     }
 
     // Get the current coordinates from the map store based on the choice
-    let coordinates = null;
+    /*let coordinates = null;
     if (choice === 0) {
       coordinates = locationMarker;
     } else if (choice === 1) {
       coordinates = destinationMarker;
-    }
+    }*/
 
     try {
       console.log("User ID:", userID);
@@ -223,6 +223,10 @@ const LocationSearchScreen: React.FC = () => {
   // Function to toggle bookmark (create if not found, delete if found)
   const toggleBookmark = (item) => {
     const locationName = item.display_name;
+    const coordinates = {
+      latitude: parseFloat(item.lat),
+      longitude: parseFloat(item.lon),
+    };
 
     if (isBookmarked(locationName)) {
       const bookmarkId = getBookmarkIdByLocation(locationName);
@@ -232,7 +236,7 @@ const LocationSearchScreen: React.FC = () => {
         console.warn("Could not find bookmark ID for location:", locationName);
       }
     } else {
-      createBookmarkOnServer(locationName);
+      createBookmarkOnServer(locationName, coordinates);
     }
   };
 
@@ -257,21 +261,25 @@ const LocationSearchScreen: React.FC = () => {
           data={bookmarks}
           keyExtractor={(item) => item.bookmarkid.toString()}
           renderItem={({ item }) => (
-            <View style={styles.bookmarkItem}>
-              <Text style={styles.bookmarkText}>{item.location}</Text>
-              <TouchableOpacity
-                style={styles.removeBookmarkButton}
-                onPress={() => deleteBookmarkOnServer(item.bookmarkid)}
-              >
-                <Text style={styles.removeBookmarkText}>Remove</Text>
-              </TouchableOpacity>
-            </View>
+            
+              <View style={styles.resultContainer}>
+                <TouchableOpacity style={styles.resultItem} onPress={() => handleLocationSelect(item)}>
+                <Text style={styles.resultName}>{item.location}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.bookmarkButton, styles.bookmarked]}
+                  onPress={() => deleteBookmarkOnServer(item.bookmarkid)}>
+                  <Text style={styles.bookmarkText}>★</Text>
+                </TouchableOpacity>
+              </View>
+
           )}
           ListEmptyComponent={<Text style={styles.emptyText}>No bookmarks added.</Text>}
         />
       </View>
 
       {/* Search Results Section */}
+      <Text style={styles.bookmarksTitle}>Search Results</Text>
       <FlatList
         data={results}
         keyExtractor={(item) => item.place_id.toString()}

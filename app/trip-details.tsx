@@ -267,6 +267,11 @@ export default function TripDetails() {
                     <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
                       <Text style={styles.buttonText}>Contact</Text>
                     </TouchableOpacity>
+                    {selectedTrip.status === 'completed' && (
+                      <TouchableOpacity style={styles.reviewButton} onPress={() => router.push(`/review}`)}>
+                        <Text style={styles.buttonText}>Review</Text>
+                      </TouchableOpacity>
+                    )}
                     {request.status === 'PENDING' && (
                       <>
                         <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
@@ -296,15 +301,17 @@ export default function TripDetails() {
           </TouchableOpacity>
         )}
 
+        
+            {/*<TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/review')}>
+              <Text style={styles.reviewButtonText}>Review Trip</Text>
+            </TouchableOpacity>*/}
+
         {/* If trip is completed, show Completed label and Review Trip button */}
         {selectedTrip.status === 'completed' && (
           <View style={styles.completedContainer}>
-            <TouchableOpacity style={styles.completedButton}>
+            <View style={styles.completedButton}>
               <Text style={styles.completedButtonText}>Trip Completed</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/review')}>
-              <Text style={styles.reviewButtonText}>Review Trip</Text>
-            </TouchableOpacity>
+            </View>
           </View>
         )}
       </ScrollView>
@@ -385,12 +392,11 @@ const styles = StyleSheet.create({
   reviewButton: {
     backgroundColor: '#007bff',
     paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingHorizontal: 50,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  reviewButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 });
 
 export default TripDetails;

@@ -61,7 +61,7 @@ const LocationPicker: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("Fetched bookmarks:", data);
+      //console.log("Fetched bookmarks:", data);
       setBookmarks(data.bookmarks || []);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
@@ -146,15 +146,14 @@ const LocationPicker: React.FC = () => {
               <Text style={styles.modalButtonText}>Select on Map</Text>
             </TouchableOpacity>
 
-            <View style={styles.bookmarksHeader}>
+            {/*<View style={styles.bookmarksHeader}>
               <Text style={styles.modalTitle}>Bookmarks</Text>
               <TouchableOpacity onPress={refreshBookmarks} style={styles.refreshButton}>
                 <Text style={styles.refreshText}>Refresh</Text>
               </TouchableOpacity>
-            </View>
+            </View>*/}
 
-            {/* Displaying Bookmarked Locations */}
-            {loading ? (
+            {/*loading ? (
               <ActivityIndicator size="large" color="#007BFF" style={styles.loader} />
             ) : error ? (
               <View style={styles.errorContainer}>
@@ -179,7 +178,7 @@ const LocationPicker: React.FC = () => {
                 ListEmptyComponent={<Text style={styles.emptyText}>No bookmarks available.</Text>}
                 style={styles.bookmarksList}
               />
-            )}
+            )*/}
 
             <TouchableOpacity style={styles.modalCancelButton} onPress={() => setModalVisible(false)}>
               <Text style={styles.modalCancelText}>Cancel</Text>

@@ -39,7 +39,9 @@ const ConfirmScreen: React.FC = () => {
   // Fetch trips once token is available
   useEffect(() => {
     if (token) {
+      if (mode === 'driver'){
       fetchTrips();
+      }
     }
   }, [token]);
 
