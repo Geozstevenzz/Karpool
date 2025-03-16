@@ -25,7 +25,6 @@ const DriverOrPassengerHome: React.FC = () => {
   const destinationMarker = useMapStore((state) => state.destinationMarker);
   const timeDate = useDateTimeStore((state) => state.time);
   const dates = useDateTimeStore((state) => state.dates);
-  const trips = useTripStore((state) => state.trips);
 
   // Get userID from the user store
   const { user } = useUserStore();

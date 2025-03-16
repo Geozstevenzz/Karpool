@@ -1,6 +1,7 @@
 // screens/otp-page.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, BackHandler } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -11,6 +12,16 @@ export default function OtpPage() {
   const { email, phone } = useLocalSearchParams();
 
   const [otp, setOtp] = useState('');
+
+  useFocusEffect(
+    useCallback(() => {
+      // Disable back button when on this page
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
+  
+      // Re-enable back button when leaving the page
+      return () => backHandler.remove();
+    }, [])
+  );
 
   const handleVerifyOtp = async () => {
     try {
@@ -27,9 +38,9 @@ export default function OtpPage() {
       if (!response.ok) {
         throw new Error('OTP verification failed.');
       }
-
+      Alert.alert('Signup Successful', 'Your account has been created!');
       // If OTP is verified successfully, navigate to next screen
-      router.push('/profile-picture');
+      router.replace('/profile-picture');
     } catch (error) {
       console.error('Error verifying OTP:', error);
       Alert.alert('Error', 'Could not verify OTP.');
@@ -39,10 +50,6 @@ export default function OtpPage() {
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        {/* Back button */}
-        <TouchableOpacity onPress={() => router.push('/signup')}>
-          <Ionicons name="arrow-back" size={24} color="#00308F" />
-        </TouchableOpacity>
         <Text style={styles.header}>Verify your number</Text>
       </View>
 

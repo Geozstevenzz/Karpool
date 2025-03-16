@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useUserMode } from '../store/userModeStore';
 import { useDateTimeStore } from '../store/dateTImeStore';
+import { useUserStore } from '../store/userStore';
 import * as SecureStore from 'expo-secure-store';
 
 interface SidebarProps {
@@ -26,6 +27,7 @@ const SWIPE_THRESHOLD = -50;
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const router = useRouter();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
+  const { user } = useUserStore();
 
   const panResponder = useRef(
     PanResponder.create({
@@ -94,6 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           onPress: async () => {
             try {
               await SecureStore.deleteItemAsync('token');
+              useUserStore.getState().clearUser();
               // Reset mode to "passenger"
               useUserMode.getState().setMode('passenger');
               // Reset date and time
@@ -127,7 +130,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           source={require('../assets/images/person1.jpeg')}
           style={styles.profileImage}
         />
-        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.name}>{user?.username || 'Guest'}</Text>
       </View>
 
       <View style={styles.menuItems}>

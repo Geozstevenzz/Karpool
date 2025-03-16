@@ -55,9 +55,9 @@ export default function Signup() {
         Alert.alert('Signup Failed', 'Something went wrong during signup.');
       } else {
         // Handle signup success
-        Alert.alert('Signup Successful', 'Your account has been created!');
+        //Alert.alert('Signup Successful', 'Your account has been created!');
         // Navigate to OTP page after successful signup
-         router.push({
+         router.replace({
           pathname: '/otp-page',
           params: {
           email: email,

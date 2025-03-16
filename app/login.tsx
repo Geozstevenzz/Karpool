@@ -52,7 +52,7 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        throw new Error('Login request failed.');
+        throw new Error('Invalid or Missing credentials');
       }
 
       const data = await response.json();
@@ -120,7 +120,7 @@ export default function Login() {
           <View style={styles.checkbox}>
             {rememberMe && <Ionicons name="checkmark" size={14} color="white" />}
           </View>
-          <Text style={styles.rememberMeText}>Remember me</Text>
+          <Text style={styles.rememberMeText}>Remember Me</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => router.push('/forgot-password')}>

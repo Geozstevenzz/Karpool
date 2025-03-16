@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -44,6 +45,18 @@ const ConfirmScreen: React.FC = () => {
       }
     }
   }, [token]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      if (token) {
+        if (mode === 'driver'){
+        fetchTrips();
+        }
+      }
+    }, [token])
+  );
+
 
   // Fetch all trips and categorize them by status
   const fetchTrips = async () => {

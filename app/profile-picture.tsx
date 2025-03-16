@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   Alert,
+  BackHandler
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -14,6 +15,16 @@ import { useRouter } from 'expo-router';
 export default function ProfilePicture() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  useFocusEffect(
+      useCallback(() => {
+        // Disable back button when on this page
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
+    
+        // Re-enable back button when leaving the page
+        return () => backHandler.remove();
+      }, [])
+    );
 
   const requestPermissions = async () => {
     // Request permission for camera roll (iOS) or media library
@@ -88,7 +99,7 @@ export default function ProfilePicture() {
     console.log('Profile picture saved:', selectedImage);
 
     
-    router.push('/login');
+    router.replace('/login');
   };
 
   return (
@@ -122,13 +133,6 @@ export default function ProfilePicture() {
         onPress={handleSaveProfilePicture}
       >
         <Text style={styles.buttonText}>Save Profile Picture</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.backLink}
-        onPress={() => router.back()}
-      >
-        <Text style={styles.backLinkText}>Go Back</Text>
       </TouchableOpacity>
     </View>
   );

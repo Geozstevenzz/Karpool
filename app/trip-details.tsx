@@ -9,7 +9,6 @@ import { useUserMode } from '../store/userModeStore';
 export default function TripDetails() {
   const router = useRouter();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
-
   console.log("Selected Trip:", selectedTrip);
 
   const [token, setToken] = useState<string | null>(null);
@@ -30,35 +29,35 @@ export default function TripDetails() {
     };
     loadToken();
   }, []);
+  
 
   useEffect(() => {
     if (!selectedTrip?.tripid || !token) return;
-
-    const fetchRequests = async () => {
-      try {
-        const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/requests`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-Platform': 'mobile',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server returned status ${response.status}`);
-        }
-
-        const data = await response.json();
-        setTripRequests(data.tripRequests);
-        console.log(data);
-      } catch (error) {
-        console.error('Error fetching trip requests:', error);
-      }
-    };
-
     fetchRequests();
   }, [selectedTrip, token]);
+  
+
+  const fetchRequests = async () => {
+    try {
+      const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/requests`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      setTripRequests(data.tripRequests);
+    } catch (error) {
+      console.error('Error fetching trip requests:', error);
+    }
+  };
 
   const handleAccept = async (requestId) => {
     if (!token || !selectedTrip?.tripid) {
@@ -72,9 +71,6 @@ export default function TripDetails() {
         text: "Yes",
         onPress: async () => {
           try {
-            console.log("Trip ID:", selectedTrip.tripid);
-            console.log("Request ID:", requestId);
-
             const response = await fetch("http://10.0.2.2:9000/driver/acceptPassengerReq", {
               method: "POST",
               headers: {
@@ -89,7 +85,8 @@ export default function TripDetails() {
               throw new Error(`Failed to accept request. Status: ${response.status}`);
             }
   
-            // Assume the API returns the updated trip details including updated numberofpassengers
+            
+            fetchRequests();
             const updatedTrip = await response.json();
             console.log("Updated Trip:", updatedTrip);
             useTripStore.setState({ selectedTrip: { ...selectedTrip, ...updatedTrip } });
@@ -134,7 +131,7 @@ export default function TripDetails() {
             if (!response.ok) {
               throw new Error(`Failed to reject request. Status: ${response.status}`);
             }
-  
+            fetchRequests();
             // Update state only if the API call succeeds by removing the rejected request
             setTripRequests((prevRequests) => prevRequests.filter(req => req.requestId !== requestId));
           } catch (error) {
@@ -229,9 +226,7 @@ export default function TripDetails() {
     <View style={styles.mainContainer}>
       <View style={styles.headerBackground}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.push('/trips')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+          
           <Text style={styles.headerTitle}>Trip Details</Text>
           <Text style={styles.driver}>Driver Name: {selectedTrip.drivername}</Text>
         </View>
@@ -254,7 +249,7 @@ export default function TripDetails() {
         </View>
 
         <View style={styles.detailsContainer}>
-          <Text style={styles.detailsHeader}>Passenger Requests</Text>
+          <Text style={styles.detailsHeader}>Passengers</Text>
           {tripRequests.filter(request => request.status !== 'REJECTED').length === 0 ? (
             <Text style={styles.noRequestsText}>No passenger requests</Text>
           ) : (
@@ -289,7 +284,6 @@ export default function TripDetails() {
         </View>
 
         {/* Render Start/Stop Trip Button based on trip status */}
-        {console.log("Selected Trip Passengers:", selectedTrip.numberofpassengers)}
         {selectedTrip.status === 'upcoming' && selectedTrip.numberofpassengers > 0 && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
             <Text style={styles.buttonText}>Start Trip</Text>
