@@ -119,6 +119,7 @@ const ConfirmScreen: React.FC = () => {
               setButtonText("Requested");
               // Alert user that the request has gone to the driver
               Alert.alert("Request Sent", "Your request has gone to the driver!");
+              router.push('/driver-and-passenger-home');
             } catch (error) {
               console.error("Error requesting ride:", error);
               Alert.alert("Error", "Failed to request ride. Please try again.");
