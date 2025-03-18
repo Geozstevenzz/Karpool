@@ -43,6 +43,10 @@ const ConfirmScreen: React.FC = () => {
       if (mode === 'driver'){
       fetchTrips();
       }
+
+      else if (mode === 'passenger'){
+        fetchPassengerTrips();
+      }
     }
   }, [token]);
 
@@ -52,6 +56,10 @@ const ConfirmScreen: React.FC = () => {
       if (token) {
         if (mode === 'driver'){
         fetchTrips();
+        }
+
+        else if (mode === 'passenger'){
+          fetchPassengerTrips();
         }
       }
     }, [token])
@@ -121,6 +129,90 @@ const ConfirmScreen: React.FC = () => {
       Alert.alert('Error', 'Could not fetch trips. Please try again later.');
     }
   };
+
+
+
+  // Fetch all trips and categorize them by status
+  const fetchPassengerTrips = async () => {
+    try {
+      // Fetch upcoming trips
+      const upcomingResponse = await fetch('http://10.0.2.2:9000/passenger/trips/upcoming', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!upcomingResponse.ok) {
+        throw new Error(`Server returned status: ${upcomingResponse.status} for upcoming trips`);
+      }
+
+      // Fetch all trips (completed trips)
+      const ongoingResponse = await fetch('http://10.0.2.2:9000/passenger/trips/ongoing', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!ongoingResponse.ok) {
+        throw new Error(`Server returned status: ${ongoingResponse.status} for all trips`);
+      }
+
+      const completedResponse = await fetch('http://10.0.2.2:9000/passenger/trips/completed', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Platform': 'mobile',
+        },
+      });
+
+      if (!completedResponse.ok) {
+        throw new Error(`Server returned status: ${completedResponse.status} for all trips`);
+      }
+
+      // Process responses
+      const upcomingData = await upcomingResponse.json();
+      const ongoingData = await ongoingResponse.json();
+      const completedData = await completedResponse.json();
+
+      console.log("Upcoming trips response:", upcomingData);
+      console.log("Ongoing trips response:", ongoingData);
+      console.log("Completed trips response:", completedData);
+
+      // Extract trip arrays
+      const upcomingTripsArray = Array.isArray(upcomingData) ? upcomingData : upcomingData.upcomingTrips || [];
+      const ongoingTripsArray = Array.isArray(ongoingData) ? ongoingData : ongoingData.ongoingTrips || [];
+      const completedTripsArray = Array.isArray(completedData) ? completedData : completedData.completedTrips || [];
+
+      // Filter upcoming trips (those with 'upcoming' status)
+      const upcomingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'upcoming');
+      
+      // Filter ongoing trips (those with 'ongoing' status)
+      const ongoingTripsFiltered = ongoingTripsArray.filter(trip => trip.status === 'ongoing');
+      
+      // Filter completed trips (those with 'completed' status)
+      const completedTripsFiltered = completedTripsArray.filter(trip => trip.status === 'completed');
+
+      console.log("Filtered upcoming trips:", upcomingTripsFiltered.length);
+      console.log("Filtered ongoing trips:", ongoingTripsFiltered.length);
+      console.log("Filtered completed trips:", completedTripsFiltered.length);
+
+      setUpcomingTrips(upcomingTripsFiltered);
+      setOngoingTrips(ongoingTripsFiltered);
+      setPreviousTrips(completedTripsFiltered);
+    } catch (error) {
+      console.error('Error fetching trips:', error);
+      Alert.alert('Error', 'Could not fetch trips. Please try again later.');
+    }
+  };
+
+
 
   // When a trip is pressed, store the trip in useTripStore and navigate
   const handleTripPress = (trip: any) => {

@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useTripStore } from '@/store/useTripStore';
 import { useUserMode } from '../store/userModeStore';
+import { useUserStore } from '../store/userStore';
 
 export default function TripDetails() {
   const router = useRouter();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
-
-  console.log("Trip Status:", selectedTrip?.status);
+  const currentUser = useUserStore((state) => state.user);
+  const { mode } = useUserMode();
 
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
-  // New state to track whether the trip has started
-  const [tripStarted, setTripStarted] = useState(false);
 
   // Load token from SecureStore
   useEffect(() => {
@@ -34,7 +33,9 @@ export default function TripDetails() {
 
   useEffect(() => {
     if (!selectedTrip?.tripid || !token) return;
+    if (mode === 'driver'){
     fetchRequests();
+    }
   }, [selectedTrip, token]);
 
   const fetchRequests = async () => {
@@ -71,9 +72,6 @@ export default function TripDetails() {
         text: "Yes",
         onPress: async () => {
           try {
-            console.log("Trip ID:", selectedTrip.tripid);
-            console.log("Request ID:", requestId);
-
             const response = await fetch("http://10.0.2.2:9000/driver/acceptPassengerReq", {
               method: "POST",
               headers: {
@@ -103,7 +101,6 @@ export default function TripDetails() {
             const tripsData = await tripsResponse.json();
             const tripsArray = Array.isArray(tripsData) ? tripsData : tripsData.allTrips || [];
             const updatedTrip = tripsArray.find(trip => trip.tripid === selectedTrip.tripid);
-            console.log("Updated Trip:",updatedTrip);
             if (!updatedTrip) {
               throw new Error("Updated trip not found in API response.");
             }
@@ -176,9 +173,7 @@ export default function TripDetails() {
         {
           text: "Yes",
           onPress: async () => {
-            try {
-              console.log("Starting trip:", selectedTrip.tripid);
-              
+            try {              
               const response = await fetch(`http://10.0.2.2:9000/driver/trips/${selectedTrip.tripid}/start`, {
                 method: "POST",
                 headers: {
@@ -191,7 +186,6 @@ export default function TripDetails() {
                 throw new Error(`Failed to start trip. Status: ${response.status}`);
               }
               const data = await response.json();
-              console.log("Start Trip Response:", data);
               useTripStore.setState({ selectedTrip: { ...selectedTrip, status: 'ongoing' } });
             } catch (error) {
               console.error("Error starting trip:", error);
@@ -220,7 +214,6 @@ export default function TripDetails() {
                 throw new Error(`Failed to complete trip. Status: ${response.status}`);
               }
               const data = await response.json();
-              console.log("Complete Trip Response:", data);
               useTripStore.setState({ selectedTrip: { ...selectedTrip, status: 'completed' } });
             } catch (error) {
               console.error("Error stopping trip:", error);
@@ -244,14 +237,11 @@ export default function TripDetails() {
     <View style={styles.mainContainer}>
       <View style={styles.headerBackground}>
         <View style={styles.headerContent}>
-          <TouchableOpacity onPress={() => router.push('/trips')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
           <Text style={styles.headerTitle}>Trip Details</Text>
           <Text style={styles.driver}>Driver Name: {selectedTrip.drivername}</Text>
         </View>
       </View>
-
+  
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         <View style={styles.detailsContainer}>
           <Text style={styles.detailsHeader}>Trip Details</Text>
@@ -267,57 +257,87 @@ export default function TripDetails() {
             {selectedTrip.tripdate ? selectedTrip.tripdate.split('T')[0] : 'No Date'} - {selectedTrip.triptime ? selectedTrip.triptime.slice(0, 5) : 'No Time'}
           </Text>
         </View>
-
-        <View style={styles.detailsContainer}>
-          <Text style={styles.detailsHeader}>Passenger Requests</Text>
-          {tripRequests.filter(request => request.status !== 'REJECTED').length === 0 ? (
-            <Text style={styles.noRequestsText}>No passenger requests</Text>
-          ) : (
-            tripRequests
-              .filter(request => request.status !== 'REJECTED')
-              .map((request) => (
-                <View key={request.requestId} style={styles.requestItem}>
-                  <Text style={styles.passengerText}>{request.passenger.username}</Text>
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
-                      <Text style={styles.buttonText}>Contact</Text>
-                    </TouchableOpacity>
-                    {request.status === 'PENDING' && (
-                      <>
-                        <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
-                          <Text style={styles.buttonText}>Accept</Text>
+  
+        {/* Driver Mode: Show Passenger Requests */}
+        {mode === "driver" && (
+          <View style={styles.detailsContainer}>
+            <Text style={styles.detailsHeader}>Passengers</Text>
+            {tripRequests.filter(request => request.status !== 'REJECTED').length === 0 ? (
+              <Text style={styles.noRequestsText}>No passenger requests</Text>
+            ) : (
+              tripRequests
+                .filter(request => request.status !== 'REJECTED')
+                .map((request) => (
+                  <View key={request.requestId} style={styles.requestItem}>
+                    <Text style={styles.passengerText}>{request.passenger.username}</Text>
+                    <View style={styles.buttonRow}>
+                      <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
+                        <Text style={styles.buttonText}>Contact</Text>
+                      </TouchableOpacity>
+                      {request.status === 'PENDING' && (
+                        <>
+                          <TouchableOpacity style={styles.acceptButton} onPress={() => handleAccept(request.requestId)}>
+                            <Text style={styles.buttonText}>Accept</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity style={styles.rejectButton} onPress={() => handleReject(request.requestId)}>
+                            <Text style={styles.buttonText}>Reject</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                      {/* Show Review button when trip is completed */}
+                      {selectedTrip.status === "completed" && (
+                        <TouchableOpacity
+                          style={styles.reviewButton}
+                          onPress={() => router.push({ pathname: "/review", params: { userId: request.passenger.userId } })}
+                        >
+                          <Text style={styles.reviewButtonText}>Review</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.rejectButton} onPress={() => handleReject(request.requestId)}>
-                          <Text style={styles.buttonText}>Reject</Text>
-                        </TouchableOpacity>
-                      </>
-                    )}
+                      )}
+                    </View>
                   </View>
+                ))
+            )}
+          </View>
+        )}
+  
+        {/* Passenger Mode: Show relevant buttons based on trip status */}
+        {mode === "passenger" && (
+          <View style={{ marginTop: 20 }}>
+            {(selectedTrip.status === "upcoming" || selectedTrip.status === "ongoing") && (
+              <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
+                <Text style={styles.buttonText}>Contact Driver</Text>
+              </TouchableOpacity>
+            )}
+            {selectedTrip.status === "completed" && (
+              <View style={styles.completedContainer}>
+                <View style={styles.completedButton}>
+                  <Text style={styles.completedButtonText}>Trip Completed</Text>
                 </View>
-              ))
-          )}
-        </View>
-
-        {/* Render Start/Stop Trip Button based on trip status */}
-        {selectedTrip.status === 'upcoming' && selectedTrip.numberofpassengers > 0 && (
+                <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/review')}>
+                  <Text style={styles.reviewButtonText}>Review Driver</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+  
+        {/* Driver Mode: Show Start/Stop Trip Buttons */}
+        {mode === "driver" && selectedTrip.status === "upcoming" && selectedTrip.numberofpassengers > 0 && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
             <Text style={styles.buttonText}>Start Trip</Text>
           </TouchableOpacity>
         )}
-        {selectedTrip.status === 'ongoing' && (
+        {mode === "driver" && selectedTrip.status === "ongoing" && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
             <Text style={styles.buttonText}>Stop Trip</Text>
           </TouchableOpacity>
         )}
         {/* If trip is completed, show Completed label and Review Trip button */}
-        {selectedTrip.status === 'completed' && (
+        {mode === "driver" && selectedTrip.status === 'completed' && (
           <View style={styles.completedContainer}>
             <View style={styles.completedButton}>
               <Text style={styles.completedButtonText}>Trip Completed</Text>
             </View>
-            <TouchableOpacity style={styles.reviewButton} onPress={() => router.push('/review')}>
-              <Text style={styles.reviewButtonText}>Review Trip</Text>
-            </TouchableOpacity>
           </View>
         )}
       </ScrollView>
