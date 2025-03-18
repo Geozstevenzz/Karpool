@@ -118,4 +118,14 @@ export const useMapStore = create<MapComponentProps>((set, get) => ({
       }));
     }
   },
+
+  resetMapState: () =>
+    set({
+      locationMarker: { latitude: 31.481757, longitude: 74.396959 },
+      destinationMarker: { latitude: 31.463119, longitude: 74.414223 },
+      locationName: "Select Start Location",
+      destinationName: "Select Destination",
+      choice: 0,
+      fitToMarkers: true,
+    }),
 }));

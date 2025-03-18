@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Modal, Text, StyleSheet, Image, TouchableOpacity, Button } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -23,6 +23,17 @@ export default function DatePickerComponent() {
 
   const [selectedDates, setSelectedDates] = useState<string[]>([]); // Store multiple dates
   const [selectedTime, setSelectedTime] = useState<string>("Select Time"); // Default text for time
+
+  useEffect(() => {
+    // Sync local state when global dates reset
+    if (Object.keys(dates).length === 0) {
+      setSelectedDates([]);
+    }
+    if (time) {
+      setSelectedTime("Select Time");
+    }
+  }, [dates, time]);
+  
 
   const showTimePicker = () => {
     setTimePickerVisibility(true);

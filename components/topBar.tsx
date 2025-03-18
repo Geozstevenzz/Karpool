@@ -5,6 +5,8 @@ import { useUserStore } from '../store/userStore';
 import { useVehicleStore } from '../store/vehicleStore';
 import { useDriverStore } from '../store/driverStore'; // Import Zustand store for driverID
 import { useRouter } from 'expo-router';
+import { useDateTimeStore } from '../store/dateTImeStore';
+import { useMapStore } from '../store/mapStore';
 
 interface TopBarProps {
   onMenuPress: () => void;
@@ -19,6 +21,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const router = useRouter();
 
   //console.log("TopBar is loading user: ",user);
+  const resetDateTime = useDateTimeStore.getState().reset;
 
   const toggleMode = () => {
     Alert.alert(
@@ -41,6 +44,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
             } else {
               setMode('passenger');
             }
+            resetDateTime();
+            useMapStore.getState().resetMapState();
           },
         },
       ]

@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { useUserMode } from '../store/userModeStore';
 import { useDateTimeStore } from '../store/dateTImeStore';
 import { useUserStore } from '../store/userStore';
+import { useMapStore } from '../store/mapStore';
 import * as SecureStore from 'expo-secure-store';
 
 interface SidebarProps {
@@ -101,6 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
               useUserMode.getState().setMode('passenger');
               // Reset date and time
             resetDateTime();
+            useMapStore.getState().resetMapState();
               closeSidebar();
               router.replace('/'); // Redirect to index.tsx
             } catch (error) {
