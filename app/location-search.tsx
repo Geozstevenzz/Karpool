@@ -11,9 +11,8 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useMapStore } from "@/store/mapStore";
-import * as SecureStore from "expo-secure-store"; // for retrieving token
+import * as SecureStore from "expo-secure-store";
 
-// NEW: Import your user store
 import { useUserStore } from "@/store/userStore";
 
 const LocationSearchScreen: React.FC = () => {
@@ -23,7 +22,6 @@ const LocationSearchScreen: React.FC = () => {
 
   const router = useRouter();
 
-  // Access map store actions/props (and also the current markers)
   const {
     choice,
     locationMarker,
@@ -34,17 +32,13 @@ const LocationSearchScreen: React.FC = () => {
     setDestinationName,
   } = useMapStore();
 
-  // Local state for server bookmarks
   const [bookmarks, setBookmarks] = useState([]);
 
-  // Retrieve user data (assuming user has 'userid')
   const { user } = useUserStore();
-  const userID = user?.userid; // Adjust if user store structure is different
+  const userID = user?.userid;
 
-  // We'll store the token from SecureStore
   const [token, setToken] = useState<string | null>(null);
 
-  // Retrieve the token on mount
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -59,14 +53,12 @@ const LocationSearchScreen: React.FC = () => {
     loadToken();
   }, []);
 
-  // Once we have a token and a valid userID, fetch bookmarks from the server
   useEffect(() => {
     if (token && userID) {
       fetchBookmarks();
     }
   }, [token, userID]);
 
-  // Function to fetch bookmarks from the server using native fetch
   const fetchBookmarks = async () => {
     try {
       const response = await fetch("http://10.0.2.2:9000/user/bookmark/all", {
@@ -89,12 +81,10 @@ const LocationSearchScreen: React.FC = () => {
     }
   };
 
-  // Check if a location is already bookmarked (matching server's 'location' field)
   const isBookmarked = (locationName: string) => {
     return bookmarks.some((bm) => bm.location === locationName);
   };
 
-  // Function to search locations using Nominatim
   const searchLocation = async () => {
     if (!query.trim()) {
       alert("Please enter a location to search!");
@@ -118,7 +108,6 @@ const LocationSearchScreen: React.FC = () => {
     }
   };
 
-  // Function to handle location selection
   const handleLocationSelect = (item) => {
   const selectedLocation = {
     latitude: typeof item.latitude === "number" ? item.latitude : parseFloat(item.lat),
@@ -143,20 +132,11 @@ const LocationSearchScreen: React.FC = () => {
     router.back();
   };
 
-  // Function to create a bookmark on the server using fetch
   const createBookmarkOnServer = async (locationName, coordinates) => {
     if (!userID) {
       Alert.alert("Error", "No user ID found.");
       return;
     }
-
-    // Get the current coordinates from the map store based on the choice
-    /*let coordinates = null;
-    if (choice === 0) {
-      coordinates = locationMarker;
-    } else if (choice === 1) {
-      coordinates = destinationMarker;
-    }*/
 
     try {
       console.log("User ID:", userID);
@@ -169,7 +149,6 @@ const LocationSearchScreen: React.FC = () => {
           Authorization: `Bearer ${token}`,
           "X-Platform": "mobile",
         },
-        // Now sending latitude and longitude along with location
         body: JSON.stringify({
           userid: userID,
           location: locationName,
@@ -181,7 +160,6 @@ const LocationSearchScreen: React.FC = () => {
       }
       const data = await response.json();
       console.log("Bookmark creation response:", data);
-      // Re-fetch bookmarks to update local list
       fetchBookmarks();
     } catch (error) {
       console.error("Error creating bookmark:", error);
@@ -189,7 +167,6 @@ const LocationSearchScreen: React.FC = () => {
     }
   };
 
-  // Function to delete a bookmark from the server using fetch
   const deleteBookmarkOnServer = async (bookmarkid: number) => {
     try {
       const response = await fetch("http://10.0.2.2:9000/user/bookmark/delete", {
@@ -206,7 +183,6 @@ const LocationSearchScreen: React.FC = () => {
       }
       const data = await response.json();
       console.log("Bookmark deletion response:", data);
-      // Re-fetch bookmarks
       fetchBookmarks();
     } catch (error) {
       console.error("Error deleting bookmark:", error);
@@ -214,13 +190,11 @@ const LocationSearchScreen: React.FC = () => {
     }
   };
 
-  // Helper to find a bookmark by location name
   const getBookmarkIdByLocation = (locationName: string): number | null => {
     const found = bookmarks.find((bm) => bm.location === locationName);
     return found ? found.bookmarkid : null;
   };
 
-  // Function to toggle bookmark (create if not found, delete if found)
   const toggleBookmark = (item) => {
     const locationName = item.display_name;
     const coordinates = {

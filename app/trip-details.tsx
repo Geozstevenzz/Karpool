@@ -16,7 +16,6 @@ export default function TripDetails() {
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
 
-  // Load token from SecureStore
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -86,7 +85,6 @@ export default function TripDetails() {
               throw new Error(`Failed to accept request. Status: ${response.status}`);
             }
   
-            // After accepting the request, fetch all trips to get the updated trip details
             const tripsResponse = await fetch("http://10.0.2.2:9000/user/upcomingTrips", {
               method: "GET",
               headers: {
@@ -105,10 +103,8 @@ export default function TripDetails() {
               throw new Error("Updated trip not found in API response.");
             }
   
-            // Update the selectedTrip in the trip store with the up-to-date details
             useTripStore.setState({ selectedTrip: updatedTrip });
   
-            // Also update the specific request's status in local state
             setTripRequests((prevRequests) =>
               prevRequests.map(req =>
                 req.requestId === requestId ? { ...req, status: 'ACCEPTED' } : req
@@ -149,7 +145,6 @@ export default function TripDetails() {
               throw new Error(`Failed to reject request. Status: ${response.status}`);
             }
   
-            // Remove the rejected request from local state
             setTripRequests((prevRequests) => prevRequests.filter(req => req.requestId !== requestId));
           } catch (error) {
             console.error("Error rejecting request:", error);
@@ -167,7 +162,6 @@ export default function TripDetails() {
     }
     
     if (selectedTrip.status === 'upcoming') {
-      // Confirm starting trip
       Alert.alert("Start Trip", "Are you sure you want to start this trip?", [
         { text: "Cancel", style: "cancel" },
         {
@@ -195,7 +189,6 @@ export default function TripDetails() {
         },
       ]);
     } else if (selectedTrip.status === 'ongoing') {
-      // Confirm stopping trip
       Alert.alert("Stop Trip", "Are you sure you want to end this trip?", [
         { text: "Cancel", style: "cancel" },
         {
@@ -258,7 +251,6 @@ export default function TripDetails() {
           </Text>
         </View>
   
-        {/* Driver Mode: Show Passenger Requests */}
         {mode === "driver" && (
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsHeader}>Passengers</Text>
@@ -284,7 +276,6 @@ export default function TripDetails() {
                           </TouchableOpacity>
                         </>
                       )}
-                      {/* Show Review button when trip is completed */}
                       {selectedTrip.status === "completed" && (
                         <TouchableOpacity
                           style={styles.reviewButton}
@@ -300,7 +291,6 @@ export default function TripDetails() {
           </View>
         )}
   
-        {/* Passenger Mode: Show relevant buttons based on trip status */}
         {mode === "passenger" && (
           <View style={{ marginTop: 20 }}>
             {(selectedTrip.status === "upcoming" || selectedTrip.status === "ongoing") && (
@@ -321,7 +311,6 @@ export default function TripDetails() {
           </View>
         )}
   
-        {/* Driver Mode: Show Start/Stop Trip Buttons */}
         {mode === "driver" && selectedTrip.status === "upcoming" && selectedTrip.numberofpassengers > 0 && (
           <TouchableOpacity style={styles.startTripButton} onPress={handleStartOrStopTrip}>
             <Text style={styles.buttonText}>Start Trip</Text>
@@ -332,7 +321,6 @@ export default function TripDetails() {
             <Text style={styles.buttonText}>Stop Trip</Text>
           </TouchableOpacity>
         )}
-        {/* If trip is completed, show Completed label and Review Trip button */}
         {mode === "driver" && selectedTrip.status === 'completed' && (
           <View style={styles.completedContainer}>
             <View style={styles.completedButton}>

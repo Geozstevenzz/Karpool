@@ -4,13 +4,11 @@ import { useRouter, usePathname } from 'expo-router';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const pathname = usePathname(); // Tracks the current route
+  const pathname = usePathname();
 
-  // Handle Android back press
   useEffect(() => {
     const handleBackPress = () => {
       if (pathname === '/') {
-        // If on the index page, ask to exit
         Alert.alert(
           'Exit App',
           'Are you sure you want to exit?',
@@ -19,16 +17,15 @@ export default function HomeScreen() {
             { text: 'Exit', onPress: () => BackHandler.exitApp() },
           ]
         );
-        return true; // Prevent default behavior
+        return true;
       } else {
-        // If on any other page, navigate back
         router.back();
-        return true; // Prevent default behavior
+        return true;
       }
     };
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
-    return () => backHandler.remove(); // Cleanup on component unmount
+    return () => backHandler.remove();
   }, [pathname, router]);
 
   return (

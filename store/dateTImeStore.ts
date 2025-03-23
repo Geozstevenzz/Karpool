@@ -14,7 +14,7 @@ type dateTimeStore = {
     time: Date;
     setDate: (allDates: DateType) => void;
     setTime: (newTime: Date) => void;
-    reset: () => void;  // New function to reset state
+    reset: () => void;
 };
 
 export const useDateTimeStore = create<dateTimeStore>((set) => ({
@@ -22,5 +22,5 @@ export const useDateTimeStore = create<dateTimeStore>((set) => ({
     time: new Date(),
     setDate: (allDates) => set(() => ({ dates: allDates })),
     setTime: (newTime) => set(() => ({ time: newTime })),
-    reset: () => set(() => ({ dates: {}, time: new Date() })) // Reset function
+    reset: () => set(() => ({ dates: {}, time: new Date() }))
 }));

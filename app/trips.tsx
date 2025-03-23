@@ -9,20 +9,15 @@ import { useUserMode } from '../store/userModeStore';
 
 const ConfirmScreen: React.FC = () => {
   const router = useRouter();
-  const { mode } = useUserMode(); // Access user mode
+  const { mode } = useUserMode();
 
-  // Three tabs: upcoming, ongoing, and previous
   const [activeTab, setActiveTab] = useState<'upcoming' | 'ongoing' | 'previous'>('upcoming');
-
-  // States for fetched trips
   const [upcomingTrips, setUpcomingTrips] = useState([]);
   const [ongoingTrips, setOngoingTrips] = useState([]);
   const [previousTrips, setPreviousTrips] = useState([]);
 
-  // State for storing token
   const [token, setToken] = useState<string | null>(null);
 
-  // Load the token from SecureStore once
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -37,7 +32,6 @@ const ConfirmScreen: React.FC = () => {
     loadToken();
   }, []);
 
-  // Fetch trips once token is available
   useEffect(() => {
     if (token) {
       if (mode === 'driver'){
@@ -66,7 +60,6 @@ const ConfirmScreen: React.FC = () => {
   );
 
 
-  // Fetch all trips and categorize them by status
   const fetchTrips = async () => {
     try {
       // Fetch upcoming trips
@@ -83,7 +76,6 @@ const ConfirmScreen: React.FC = () => {
         throw new Error(`Server returned status: ${upcomingResponse.status} for upcoming trips`);
       }
 
-      // Fetch all trips (completed trips)
       const allTripsResponse = await fetch('http://10.0.2.2:9000/user/allUserTrips', {
         method: 'GET',
         headers: {
@@ -97,24 +89,17 @@ const ConfirmScreen: React.FC = () => {
         throw new Error(`Server returned status: ${allTripsResponse.status} for all trips`);
       }
 
-      // Process responses
       const upcomingData = await upcomingResponse.json();
       const allTripsData = await allTripsResponse.json();
 
       console.log("Upcoming trips response:", upcomingData);
       console.log("All trips response:", allTripsData);
 
-      // Extract trip arrays
       const upcomingTripsArray = Array.isArray(upcomingData) ? upcomingData : upcomingData.upcomingTrips || [];
       const allTripsArray = Array.isArray(allTripsData) ? allTripsData : allTripsData.allTrips || [];
 
-      // Filter upcoming trips (those with 'upcoming' status)
       const upcomingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'upcoming');
-      
-      // Filter ongoing trips (those with 'ongoing' status)
       const ongoingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'ongoing');
-      
-      // Get completed trips from allTripsArray (all completed trips are in allTripsArray)
       const completedTrips = allTripsArray.filter(trip => trip.status === 'completed');
 
       console.log("Filtered upcoming trips:", upcomingTripsFiltered.length);
@@ -132,10 +117,8 @@ const ConfirmScreen: React.FC = () => {
 
 
 
-  // Fetch all trips and categorize them by status
   const fetchPassengerTrips = async () => {
     try {
-      // Fetch upcoming trips
       const upcomingResponse = await fetch('http://10.0.2.2:9000/passenger/trips/upcoming', {
         method: 'GET',
         headers: {
@@ -149,7 +132,6 @@ const ConfirmScreen: React.FC = () => {
         throw new Error(`Server returned status: ${upcomingResponse.status} for upcoming trips`);
       }
 
-      // Fetch all trips (completed trips)
       const ongoingResponse = await fetch('http://10.0.2.2:9000/passenger/trips/ongoing', {
         method: 'GET',
         headers: {
@@ -176,32 +158,17 @@ const ConfirmScreen: React.FC = () => {
         throw new Error(`Server returned status: ${completedResponse.status} for all trips`);
       }
 
-      // Process responses
       const upcomingData = await upcomingResponse.json();
       const ongoingData = await ongoingResponse.json();
       const completedData = await completedResponse.json();
 
-      console.log("Upcoming trips response:", upcomingData);
-      console.log("Ongoing trips response:", ongoingData);
-      console.log("Completed trips response:", completedData);
-
-      // Extract trip arrays
       const upcomingTripsArray = Array.isArray(upcomingData) ? upcomingData : upcomingData.upcomingTrips || [];
       const ongoingTripsArray = Array.isArray(ongoingData) ? ongoingData : ongoingData.ongoingTrips || [];
       const completedTripsArray = Array.isArray(completedData) ? completedData : completedData.completedTrips || [];
 
-      // Filter upcoming trips (those with 'upcoming' status)
       const upcomingTripsFiltered = upcomingTripsArray.filter(trip => trip.status === 'upcoming');
-      
-      // Filter ongoing trips (those with 'ongoing' status)
       const ongoingTripsFiltered = ongoingTripsArray.filter(trip => trip.status === 'ongoing');
-      
-      // Filter completed trips (those with 'completed' status)
       const completedTripsFiltered = completedTripsArray.filter(trip => trip.status === 'completed');
-
-      console.log("Filtered upcoming trips:", upcomingTripsFiltered.length);
-      console.log("Filtered ongoing trips:", ongoingTripsFiltered.length);
-      console.log("Filtered completed trips:", completedTripsFiltered.length);
 
       setUpcomingTrips(upcomingTripsFiltered);
       setOngoingTrips(ongoingTripsFiltered);
@@ -214,9 +181,7 @@ const ConfirmScreen: React.FC = () => {
 
 
 
-  // When a trip is pressed, store the trip in useTripStore and navigate
   const handleTripPress = (trip: any) => {
-    // Store the selected trip in useTripStore by adding a new property 'selectedTrip'
     useTripStore.setState({ selectedTrip: trip });
     router.push(`/trip-details?tripId=${trip.tripid}`);
   };
@@ -238,7 +203,6 @@ const ConfirmScreen: React.FC = () => {
     </TouchableOpacity>
   );
 
-  // Get the appropriate trip data based on active tab
   const getActiveTabData = () => {
     switch(activeTab) {
       case 'upcoming':

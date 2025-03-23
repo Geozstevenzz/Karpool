@@ -2,8 +2,6 @@ import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useUserMode } from '../store/userModeStore';
 import { useUserStore } from '../store/userStore';
-import { useVehicleStore } from '../store/vehicleStore';
-import { useDriverStore } from '../store/driverStore'; // Import Zustand store for driverID
 import { useRouter } from 'expo-router';
 import { useDateTimeStore } from '../store/dateTImeStore';
 import { useMapStore } from '../store/mapStore';
@@ -16,11 +14,8 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
   const mode = useUserMode((state) => state.mode);
   const setMode = useUserMode((state) => state.setMode);
   const { user } = useUserStore();
-  const vehicleID = useVehicleStore((state) => state.vehicleID);
-  const driverID = useDriverStore((state) => state.driverID); // Fetch driverID from Zustand
   const router = useRouter();
 
-  //console.log("TopBar is loading user: ",user);
   const resetDateTime = useDateTimeStore.getState().reset;
 
   const toggleMode = () => {
@@ -33,10 +28,7 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuPress }) => {
           text: "Yes",
           onPress: () => {
             if (mode === 'passenger') {
-              //console.log("DriverID is",driverID);
-              //console.log(user?.driverid);
               if (!user.driverid) {
-                // First-time driver without driverID: Redirect to Driver Details
                 router.push('/driver-details');
                 return;
               }

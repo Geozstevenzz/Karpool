@@ -102,19 +102,18 @@ export const useMapStore = create<MapComponentProps>((set, get) => ({
     console.log("All bookmarks cleared.");
   },
 
-  // Select a bookmark to set it as the start or destination location
   selectBookmark: (bookmark, type: "start" | "destination") => {
     if (type === "start") {
       set(() => ({
         locationMarker: bookmark.coordinates,
         locationName: bookmark.name,
-        choice: 0, // Start location chosen
+        choice: 0,
       }));
     } else if (type === "destination") {
       set(() => ({
         destinationMarker: bookmark.coordinates,
         destinationName: bookmark.name,
-        choice: 1, // Destination location chosen
+        choice: 1,
       }));
     }
   },

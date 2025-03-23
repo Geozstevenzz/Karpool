@@ -8,31 +8,25 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 import { useTripStore } from '@/store/useTripStore';
-// If your user store has the passenger's ID:
 import { useUserStore } from '@/store/userStore';
-// Import the selectedTripStore
 import { useSelectedTripStore } from '@/store/selectedTripStore';
 
 const { height } = Dimensions.get('window');
 
 const ConfirmScreen: React.FC = () => {
   const router = useRouter();
-  const { tripid } = useLocalSearchParams<{ tripid: string }>(); // Get tripId from the route
+  const { tripid } = useLocalSearchParams<{ tripid: string }>();
   const trip = useTripStore((state) =>
     state.trips.find((t) => t.tripid === Number(tripid))
   );
 
-  // If your user is the passenger, retrieve their ID from your user store
   const { user } = useUserStore();
-  const passengerId = user?.userid; // Adjust if you store it differently
+  const passengerId = user?.userid;
   
-  // Get the selected tripId from selectedTripStore
   const selectedTripId = useSelectedTripStore((state) => state.selectedTripId);
 
-  // State for route
   const [route, setRoute] = useState([]);
-  
-  // State for button text
+
   const [buttonText, setButtonText] = useState('Request for Ride');
 
   useEffect(() => {
@@ -45,7 +39,7 @@ const ConfirmScreen: React.FC = () => {
         const response = await axios.get(
           `https://api.openrouteservice.org/v2/directions/foot-walking?api_key=5b3ce3597851110001cf6248f6c0554d630a4d5294487cf1edfd5e13&start=${origin[0]},${origin[1]}&end=${destination[0]},${destination[1]}`
         );      
-        // Check if the response contains routes
+
         if (response.data.features && response.data.features.length > 0) {
           const coordinates = response.data.features[0].geometry.coordinates;
           const routeCoordinates = coordinates.map((coord: any) => ({
@@ -84,14 +78,13 @@ const ConfirmScreen: React.FC = () => {
           text: "Yes",
           onPress: async () => {
             try {
-              // Get the user token from SecureStore
+
               const token = await SecureStore.getItemAsync("userToken");
               if (!token) {
                 Alert.alert("Error", "No token found. Please log in again.");
                 return;
               }
   
-              // Make the POST request to your endpoint using the tripId from selectedTripStore
               const response = await fetch(
                 "http://10.0.2.2:9000/passenger/tripJoinReq",
                 {
@@ -102,8 +95,8 @@ const ConfirmScreen: React.FC = () => {
                     "X-Platform": "mobile",
                   },
                   body: JSON.stringify({
-                    tripId: selectedTripId, // Using the tripId from selectedTripStore
-                    passengerId, // from the user store
+                    tripId: selectedTripId,
+                    passengerId,
                   }),
                 }
               );
@@ -115,9 +108,7 @@ const ConfirmScreen: React.FC = () => {
               const data = await response.json();
               console.log("Join Request Response:", data);
   
-              // Switch button text to "Requested"
               setButtonText("Requested");
-              // Alert user that the request has gone to the driver
               Alert.alert("Request Sent", "Your request has gone to the driver!");
               router.push('/driver-and-passenger-home');
             } catch (error) {

@@ -22,7 +22,6 @@ export default function DriverDetails() {
   const [vehicleNumber, setLicenseNumber] = useState('');
   const [vehicleAverage, setMileage] = useState('');
 
-  // Retrieve the setters from Zustand stores
   const setVehicleID = useVehicleStore((state) => state.setVehicleID);
   const setDriverID = useDriverStore((state) => state.setDriverID);
 
@@ -67,12 +66,9 @@ export default function DriverDetails() {
       const result = await response.json();
       console.log(result);
 
-      // Extract and store driverID and vehicleID
       const driverIDFromResult = result.vehicle?.driverid;
       if (driverIDFromResult) {
-        console.log("Driver ID:", driverIDFromResult);
         setDriverID(driverIDFromResult);
-        // Update the user object in userStore with the new driverid
         if (user) {
           setUser({ ...user, driverid: driverIDFromResult });
         } else {
@@ -86,7 +82,6 @@ export default function DriverDetails() {
 
       const vehicleIDFromResult = result.vehicle?.vehicleid;
       if (vehicleIDFromResult) {
-        console.log("Vehicle ID:", vehicleIDFromResult);
         setVehicleID(vehicleIDFromResult);
       } else {
         console.warn("No vehicleID received from API response");

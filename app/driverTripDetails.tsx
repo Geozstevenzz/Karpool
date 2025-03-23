@@ -1,4 +1,3 @@
-// driverTripDetails.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -10,45 +9,34 @@ import TopBar from '../components/topBar';
 import { useMapStore } from '../store/mapStore';
 import { useDateTimeStore } from '@/store/dateTImeStore';
 import { useUserStore } from '../store/userStore';
-import { useVehicleStore } from '../store/vehicleStore'; // Import vehicle store
+import { useVehicleStore } from '../store/vehicleStore';
 
 const HomeScreen: React.FC = () => {
   const router = useRouter();
   const setChoice = useMapStore((state) => state.setChoice);
   setChoice(2);
 
-  // Retrieve user data from userStore
   const { user } = useUserStore();
   const userID = user?.userid;
 
-  // Retrieve vehicleID directly from vehicleStore
   const vehicleID = useVehicleStore((state) => state.vehicleID);
   console.log("Vehicle ID:", vehicleID);
 
-  // Local state for form inputs
   const [stops, setStops] = useState('');
   const [price, setPrice] = useState('');
   const [seats, setSeats] = useState('');
 
-  // Markers from mapStore
   const locationMarker = useMapStore((state) => state.locationMarker);
   const destinationMarker = useMapStore((state) => state.destinationMarker);
 
   const sourceName = useMapStore((state) => state.locationName);
   const destinationName = useMapStore((state) => state.destinationName);
 
-  console.log("Location Name:", sourceName);
-  console.log("Destination Name:", destinationName);
-
-  // Date/time from dateTimeStore
   const timeDate = useDateTimeStore((state) => state.time);
   const dateObjects = useDateTimeStore((state) => state.dates);
   const time = timeDate.getHours() + ':' + timeDate.getMinutes();
-
-  // Token from SecureStore
   const [token, setToken] = useState<string | null>(null);
 
-  // Load token from secure store on component mount
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -65,13 +53,11 @@ const HomeScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     try {
-      // Convert dateObjects to an array if needed
       const dates: string[] = [];
       for (const date in dateObjects) {
         dates.push(date);
       }
 
-      // Combine data into a single object
       const combinedData = {
         userID,         // from userStore
         vehicleID,      // from vehicleStore
@@ -86,9 +72,6 @@ const HomeScreen: React.FC = () => {
         destinationName
       };
 
-      console.log('Submitting:', combinedData);
-
-      // Ensure we have a valid token
       if (!token) {
         Alert.alert('Error', 'No token available. Please log in again.');
         return;

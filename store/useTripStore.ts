@@ -13,8 +13,8 @@ type Trip = {
   totalseats: number;
   startlocation: { latitude: number; longitude: number };
   destinationlocation: { latitude: number; longitude: number };
-  distance: string; // Distance in km
-  estimatedTime: string; // Estimated time in minutes
+  distance: string;
+  estimatedTime: string;
   username: string;
   profile_photo: string | null;
   vehiclename: string;

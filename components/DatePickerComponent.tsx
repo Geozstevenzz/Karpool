@@ -21,11 +21,10 @@ export default function DatePickerComponent() {
   const [calendarModalVisible, setCalendarModalVisible] = useState(false);
   const [isTimePickerVisible, setTimePickerVisibility] = useState(false);
 
-  const [selectedDates, setSelectedDates] = useState<string[]>([]); // Store multiple dates
-  const [selectedTime, setSelectedTime] = useState<string>("Select Time"); // Default text for time
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selectedTime, setSelectedTime] = useState<string>("Select Time");
 
   useEffect(() => {
-    // Sync local state when global dates reset
     if (Object.keys(dates).length === 0) {
       setSelectedDates([]);
     }
@@ -44,15 +43,15 @@ export default function DatePickerComponent() {
   };
 
   const handleConfirmTime = (time: Date) => {
-    setTime(time); // Update global time in store
-    setSelectedTime(time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })); // Update local state
+    setTime(time);
+    setSelectedTime(time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     hideTimePicker();
   };
 
   const addDays = (date: Date, days: number) => {
     const result = new Date(date);
     result.setDate(result.getDate() + days);
-    return result.toISOString().split('T')[0]; // Return date string in format 'YYYY-MM-DD'
+    return result.toISOString().split('T')[0];
   };
 
   const selectDate = (day: any) => {
@@ -60,7 +59,6 @@ export default function DatePickerComponent() {
     const newDates = { ...dates };
 
     if (userMode === "passenger") {
-      // If the selected date is already chosen, remove it (allow deselection)
       if (selectedDates.includes(selectedDate)) {
           setDates({});
           setSelectedDates([]);
@@ -70,9 +68,8 @@ export default function DatePickerComponent() {
       }
   }
    else {
-        // Drivers can select multiple dates
         if (dates[selectedDate]) {
-            delete newDates[selectedDate]; // Deselect date
+            delete newDates[selectedDate];
             setDates(newDates);
             setSelectedDates(prevDates => prevDates.filter(date => date !== selectedDate));
         } else {

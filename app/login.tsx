@@ -24,11 +24,10 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Handle Android back button press
   useEffect(() => {
     const backAction = () => {
-      router.replace('/'); // Clears the stack and takes user to index
-      return true; // Prevents default behavior
+      router.replace('/');
+      return true;
     };
 
     const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
@@ -36,7 +35,6 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-    //console.log('Login button pressed', { email, password, rememberMe });
 
     try {
       const response = await fetch('http://10.0.2.2:9000/user/login', {
@@ -57,20 +55,13 @@ export default function Login() {
 
       const data = await response.json();
       console.log('Login successful:', data);
-
-      // Save the token in SecureStore
       await SecureStore.setItemAsync('userToken', data.token);
-
-      // Update the user object in userStore
       setUser(data.user);
-      //console.log("This is user: ", data.user);
 
-      // If the user object contains a vehicle id, store it in the vehicle store
       if (data.user.vehicleid) {
         setVehicleID(data.user.vehicleid);
       }
 
-      // Navigate to the next screen
       router.replace('/driver-and-passenger-home');
     } catch (error) {
       console.error('Error during login:', error);

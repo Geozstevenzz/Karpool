@@ -35,7 +35,6 @@ export default function ReviewDriver() {
       return;
     }
 
-    // Ensure only driver-to-passenger & passenger-to-driver reviews
     let reviewfrom, reviewfor, driverid, passengerid;
 
     if (mode === 'driver') {
@@ -87,7 +86,7 @@ export default function ReviewDriver() {
 
       if (response.ok) {
         Alert.alert('Success', 'Review submitted successfully.');
-        router.replace('/driver-and-passenger-home'); // Navigate to home or any other screen
+        router.replace('/driver-and-passenger-home');
       } else {
         Alert.alert('Error', data.message || 'Failed to submit review.');
       }

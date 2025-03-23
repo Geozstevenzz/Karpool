@@ -18,16 +18,12 @@ export default function ProfilePicture() {
 
   useFocusEffect(
       useCallback(() => {
-        // Disable back button when on this page
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
-    
-        // Re-enable back button when leaving the page
         return () => backHandler.remove();
       }, [])
     );
 
   const requestPermissions = async () => {
-    // Request permission for camera roll (iOS) or media library
     const mediaPermissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!mediaPermissionResult.granted) {
       Alert.alert(
@@ -37,7 +33,6 @@ export default function ProfilePicture() {
       return false;
     }
 
-    // Request permission for camera
     const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!cameraPermissionResult.granted) {
       Alert.alert(
@@ -51,7 +46,6 @@ export default function ProfilePicture() {
 
   const pickImageFromLibrary = async () => {
     try {
-      // Ensure we have permissions
       const hasPermissions = await requestPermissions();
       if (!hasPermissions) return;
 

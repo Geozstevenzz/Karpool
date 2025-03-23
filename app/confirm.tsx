@@ -4,7 +4,7 @@ import MapComponent from '../components/MapComponent';
 import TopBar from '../components/topBar';
 import { useRouter } from 'expo-router';
 import { useTripStore } from '@/store/useTripStore';
-import { useSelectedTripStore } from '@/store/selectedTripStore'; // Import selectedTripStore
+import { useSelectedTripStore } from '@/store/selectedTripStore';
 
 const { height } = Dimensions.get('window');
 
@@ -21,8 +21,8 @@ type Trip = {
   totalseats: number;
   startlocation: { latitude: number; longitude: number };
   destinationlocation: { latitude: number; longitude: number };
-  distance: string; // Distance in km
-  estimatedTime: string; // Estimated time in minutes
+  distance: string;
+  estimatedTime: string;
   username: string;
   profile_photo: string | null;
   vehiclename: string;
@@ -38,8 +38,6 @@ type Something = {
 const ConfirmScreen: React.FC = () => {
   const router = useRouter();
   const data = useTripStore((state) => state.trips);
-
-  // Get the setter for selectedTripId from the selectedTripStore
   const setSelectedTripId = useSelectedTripStore((state) => state.setSelectedTripId);
 
   const renderItem = ({ item }: Something) => (
@@ -84,9 +82,7 @@ const ConfirmScreen: React.FC = () => {
           <Pressable
             style={styles.button}
             onPress={() => {
-              // Save the selected trip's id in the selectedTripStore
               setSelectedTripId(item.tripid);
-              // Navigate to a route that uses the tripid, e.g. "/[tripid]"
               router.push(`/${item.tripid}`);
             }}
           >
@@ -122,7 +118,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   flatListContainer: {
-    maxHeight: height * 0.7, // 70% of the screen height
+    maxHeight: height * 0.7,
   },
   bottomView: {
     position: 'absolute',

@@ -7,18 +7,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function OtpPage() {
   const router = useRouter();
-
-  // Get the email and phone from the route params
   const { email, phone } = useLocalSearchParams();
 
   const [otp, setOtp] = useState('');
 
   useFocusEffect(
     useCallback(() => {
-      // Disable back button when on this page
       const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
-  
-      // Re-enable back button when leaving the page
       return () => backHandler.remove();
     }, [])
   );
@@ -39,7 +34,6 @@ export default function OtpPage() {
         throw new Error('OTP verification failed.');
       }
       Alert.alert('Signup Successful', 'Your account has been created!');
-      // If OTP is verified successfully, navigate to next screen
       router.replace('/profile-picture');
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -53,7 +47,6 @@ export default function OtpPage() {
         <Text style={styles.header}>Verify your number</Text>
       </View>
 
-      {/* Display which email the OTP was sent to */}
       <Text style={styles.instructionText}>
         Enter the OTP sent to {email}
       </Text>
@@ -67,16 +60,14 @@ export default function OtpPage() {
           onChangeText={setOtp}
           keyboardType="numeric"
           placeholder="Enter OTP"
-          maxLength={6} // assuming 6 digits
+          maxLength={6}
         />
       </View>
 
-      {/* Verify OTP Button */}
       <TouchableOpacity style={styles.button} onPress={handleVerifyOtp}>
         <Text style={styles.buttonText}>Verify OTP</Text>
       </TouchableOpacity>
 
-      {/* Resend OTP Link */}
       <TouchableOpacity
         style={styles.resendContainer}
         onPress={() => console.log('Resend OTP')}

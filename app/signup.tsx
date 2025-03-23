@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, BackHandler } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
+import { Picker } from '@react-native-picker/picker';
 
 export default function Signup() {
   const router = useRouter();
@@ -10,6 +11,7 @@ export default function Signup() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [gender, setGender] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
@@ -47,6 +49,7 @@ export default function Signup() {
           password,    // "securePass123"
           phone: phoneNumber,
           address,
+          gender
         }),
       });
 
@@ -101,6 +104,21 @@ export default function Signup() {
           placeholder="Enter your last name"
         />
       </View>
+
+      <View style={styles.inputContainer}>
+      <Text style={styles.label}>Gender</Text>
+      <View style={styles.pickerContainer}>
+        <Picker
+          selectedValue={gender}
+          onValueChange={(itemValue) => setGender(itemValue)}
+          style={styles.picker}
+        >
+          <Picker.Item label="Select Gender" value="" />
+          <Picker.Item label="Male" value="Male" />
+          <Picker.Item label="Female" value="Female" />
+        </Picker>
+      </View>
+    </View>
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Phone Number</Text>
@@ -234,6 +252,18 @@ const styles = StyleSheet.create({
     color: '#00308F',
     backgroundColor: '#FFFFFF',
     textAlign: 'left',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#999ea1',
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    height: 33,
+    justifyContent: 'center',
+    paddingHorizontal: 5,
+  },
+  picker: {
+    color: '#00308F',
   },
   button: {
     width: '90%',

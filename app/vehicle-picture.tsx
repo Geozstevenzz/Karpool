@@ -13,7 +13,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 
 export default function VehiclePicture() {
   const router = useRouter();
-  const params = useLocalSearchParams(); // Receive parameters from previous screen
+  const params = useLocalSearchParams();
   const [vehicleImage, setVehicleImage] = useState<string | null>(null);
 
   const requestPermissions = async () => {
@@ -87,7 +87,7 @@ export default function VehiclePicture() {
 
     /*router.push({
       pathname: '/driver-and-passenger-home',
-      params: { ...params, vehicleImage }, // Pass received and new params
+      params: { ...params, vehicleImage },
     });*/
   };
 

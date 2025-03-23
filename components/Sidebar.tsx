@@ -98,13 +98,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
             try {
               await SecureStore.deleteItemAsync('token');
               useUserStore.getState().clearUser();
-              // Reset mode to "passenger"
               useUserMode.getState().setMode('passenger');
-              // Reset date and time
             resetDateTime();
             useMapStore.getState().resetMapState();
               closeSidebar();
-              router.replace('/'); // Redirect to index.tsx
+              router.replace('/');
             } catch (error) {
               console.error('Error logging out:', error);
             }
@@ -129,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     >
       <View style={styles.profileSection}>
         <Image
-          source={require('../assets/images/person1.jpeg')}
+          source={user?.profile_photo || require('../assets/images/person1.jpeg')}
           style={styles.profileImage}
         />
         <Text style={styles.name}>{user?.username || 'Guest'}</Text>

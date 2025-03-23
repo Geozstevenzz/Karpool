@@ -115,7 +115,7 @@ const DriverOrPassengerHome: React.FC = () => {
 
       // Ensure we only keep trips where the user is NOT the driver
       const filteredTrips = result.filter((trip) => {
-        return trip.driverid !== user?.driverid; // Compare as numbers
+        return trip.driverid !== user?.driverid && trip.gender === user?.gender; // Compare as numbers
       });
 
       

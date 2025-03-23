@@ -24,7 +24,6 @@ const LocationPicker: React.FC = () => {
   const defaultStartText = "Select Start Location";
   const defaultDestinationText = "Select Destination";
 
-  // Load token from secure storage
   useEffect(() => {
     const loadToken = async () => {
       try {
@@ -39,7 +38,6 @@ const LocationPicker: React.FC = () => {
     loadToken();
   }, []);
 
-  // Fetch bookmarks when modal opens or token changes
   const fetchBookmarks = async () => {
     if (!token) return;
     
@@ -61,7 +59,6 @@ const LocationPicker: React.FC = () => {
       }
 
       const data = await response.json();
-      //console.log("Fetched bookmarks:", data);
       setBookmarks(data.bookmarks || []);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
@@ -71,7 +68,6 @@ const LocationPicker: React.FC = () => {
     }
   };
 
-  // Fetch bookmarks when the modal opens
   useEffect(() => {
     if (modalVisible && token) {
       fetchBookmarks();
@@ -81,7 +77,7 @@ const LocationPicker: React.FC = () => {
   const onPressLocation = (type: "start" | "destination") => {
     setChoice(type === "start" ? 0 : 1);
     setCurrentType(type);
-    setModalVisible(true); // Show modal with options
+    setModalVisible(true);
   };
 
   const onSearchLocation = () => {
@@ -102,9 +98,8 @@ const LocationPicker: React.FC = () => {
       selectBookmark(bookmark, "destination");
     }
     
-    // Ensure the map adjusts to show both markers
-    toggleFitToMarkers(true); // Set the map to fit both markers after selection
-    setModalVisible(false); // Close modal after selecting bookmark
+    toggleFitToMarkers(true);
+    setModalVisible(false);
   };
 
   const refreshBookmarks = () => {
