@@ -29,6 +29,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const router = useRouter();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
   const { user } = useUserStore();
+  //console.log("User Photo:",user?.profile_photo);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -127,7 +128,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     >
       <View style={styles.profileSection}>
         <Image
-          source={user?.profile_photo || require('../assets/images/person1.jpeg')}
+          source={
+            user?.profile_photo
+              ? { uri: user.profile_photo }
+              : require('../assets/images/person1.jpeg')
+          }
           style={styles.profileImage}
         />
         <Text style={styles.name}>{user?.username || 'Guest'}</Text>

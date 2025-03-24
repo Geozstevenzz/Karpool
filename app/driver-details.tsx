@@ -12,6 +12,7 @@ export default function DriverDetails() {
   const setMode = useUserStore((state) => state.setMode);
   const { email, phoneNumber } = useLocalSearchParams();
 
+
   const user = useUserStore((state) => state.user);
   const setUser = useUserStore((state) => state.setUser);
   const userID = user?.userid;

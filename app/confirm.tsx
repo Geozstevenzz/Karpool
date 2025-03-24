@@ -29,6 +29,7 @@ type Trip = {
   vehiclecolor: string;
   vehiclenumber: string;
   vehicleaverage: number;
+  vehiclephoto: string | null;
 };
 
 type Something = {
@@ -67,7 +68,8 @@ const ConfirmScreen: React.FC = () => {
         <View style={styles.leftSection}>
           {/* Display profile picture from data if available */}
           <Image
-            source={require("../assets/images/person1.jpeg")}
+            source={item?.profile_photo
+              ? { uri: item.profile_photo }:require("../assets/images/person1.jpeg")}
             style={styles.image}
           />
         </View>

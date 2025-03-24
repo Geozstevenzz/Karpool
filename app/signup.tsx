@@ -4,6 +4,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, Back
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons'; // Import Ionicons for the back button
 import { Picker } from '@react-native-picker/picker';
+import { useUserStore } from '../store/userStore';
 
 export default function Signup() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function Signup() {
   const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  const { setUser } = useUserStore();
 
   // Handle Android back button press
     useEffect(() => {
@@ -57,6 +60,9 @@ export default function Signup() {
         // Handle signup failure
         Alert.alert('Signup Failed', 'Something went wrong during signup.');
       } else {
+        const data = await response.json();
+        console.log(data);
+        setUser(data.user);
         // Handle signup success
         //Alert.alert('Signup Successful', 'Your account has been created!');
         // Navigate to OTP page after successful signup

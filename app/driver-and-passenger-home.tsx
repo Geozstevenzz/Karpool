@@ -107,6 +107,7 @@ const DriverOrPassengerHome: React.FC = () => {
 
       if (response.ok) {
         const result = await response.json();
+        console.log("Getting Trips:",result);
       
         if (result.length === 0) {
           Alert.alert('No Trips Available', 'There are no matching trips at the moment. Please try again later.');

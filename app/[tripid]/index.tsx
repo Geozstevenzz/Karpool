@@ -20,6 +20,8 @@ const ConfirmScreen: React.FC = () => {
     state.trips.find((t) => t.tripid === Number(tripid))
   );
 
+  console.log(trip);
+
   const { user } = useUserStore();
   const passengerId = user?.userid;
   
@@ -142,7 +144,11 @@ const ConfirmScreen: React.FC = () => {
             
             <Pressable onPress={() => alert('Profile Pressed')} style={styles.profile}>
               <Image
-                source={require("../../assets/images/person3.jpeg")}
+                source={
+                  trip?.profile_photo
+                    ? { uri: trip.profile_photo }  // This is the URI (URL) of the remote image.
+                    : require('../../assets/images/person1.jpeg')
+                }
                 style={styles.profilePic}
               />
               
@@ -159,7 +165,11 @@ const ConfirmScreen: React.FC = () => {
             
             <Pressable onPress={() => alert('Vehicle Pressed')} style={styles.profile}>
             <Image
-              source={require("../../assets/images/Car.png")}
+              source={
+                  trip?.vehiclephoto
+                    ? { uri: trip.vehiclephoto }  // This is the URI (URL) of the remote image.
+                    : require('../../assets/images/Car.png')
+                }
               style={styles.carImage}
             />
             </Pressable>
@@ -326,8 +336,9 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   carImage: {
-    width: 85,
+    width: 50,
     height: 50,
+    borderRadius: 25,
   },
   passengerStops: {
     flexDirection: 'row',

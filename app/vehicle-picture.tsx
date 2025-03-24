@@ -1,5 +1,4 @@
-// screens/vehicle-picture.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,28 +9,44 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { useVehicleStore } from '../store/vehicleStore';
 
 export default function VehiclePicture() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  let vehicleId = useVehicleStore();
+  vehicleId = vehicleId?.vehicleID;
+  console.log("Vehicle ID:",vehicleId);
   const [vehicleImage, setVehicleImage] = useState<string | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
+
+  // Retrieve user token on mount
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (token) {
+          setUserToken(token);
+        } else {
+          Alert.alert('No Token Found', 'Please log in again.');
+        }
+      } catch (error) {
+        console.error('Error retrieving token from SecureStore:', error);
+      }
+    };
+    getToken();
+  }, []);
 
   const requestPermissions = async () => {
     const mediaPermissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!mediaPermissionResult.granted) {
-      Alert.alert(
-        'Permission required',
-        'We need permission to access your media library.'
-      );
+      Alert.alert('Permission required', 'We need permission to access your media library.');
       return false;
     }
 
     const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!cameraPermissionResult.granted) {
-      Alert.alert(
-        'Permission required',
-        'We need permission to access your camera.'
-      );
+      Alert.alert('Permission required', 'We need permission to access your camera.');
       return false;
     }
     return true;
@@ -45,7 +60,7 @@ export default function VehiclePicture() {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
-        aspect: [4, 3], 
+        aspect: [4, 3],
         quality: 1,
       });
 
@@ -76,19 +91,52 @@ export default function VehiclePicture() {
     }
   };
 
-  const handleSaveVehiclePicture = () => {
+  const handleSaveVehiclePicture = async () => {
     if (!vehicleImage) {
       Alert.alert('No image selected', 'Please pick or take a photo first.');
       return;
     }
+    if (!userToken) {
+      Alert.alert('No token found', 'Please log in again.');
+      return;
+    }
 
-    console.log('Vehicle picture saved:', vehicleImage);
-    router.back();
+    try {
+      // Prepare FormData
+      const formData = new FormData();
+      formData.append('vehicle_picture', {
+        uri: vehicleImage,
+        type: 'image/jpeg', // or 'image/png'
+        name: 'vehicle.jpg',
+      } as any);
 
-    /*router.push({
-      pathname: '/driver-and-passenger-home',
-      params: { ...params, vehicleImage },
-    });*/
+       formData.append('vehicleId', vehicleId);
+
+      // Make POST request
+      const response = await fetch('http://10.0.2.2:9000/driver/vehicle/photo/upload', {
+        method: 'POST',
+        headers: {
+          // Let fetch set Content-Type for multipart automatically
+          'Authorization': `Bearer ${userToken}`,
+          'X-Platform': 'mobile',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Vehicle picture upload success:', data);
+
+      Alert.alert('Success', 'Vehicle picture uploaded successfully!');
+      // Navigate back or wherever you want
+      router.back();
+    } catch (error) {
+      console.error('Error uploading vehicle picture:', error);
+      Alert.alert('Error', 'Could not upload vehicle picture. Please try again.');
+    }
   };
 
   return (
@@ -121,6 +169,7 @@ export default function VehiclePicture() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -132,7 +181,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     color: '#00308F',
-    
     marginBottom: 20,
   },
   placeholderContainer: {
@@ -147,7 +195,6 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 14,
     color: '#999ea1',
-    
   },
   imagePreview: {
     width: 250,
@@ -165,15 +212,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    
-  },
-  backLink: {
-    marginTop: 20,
-  },
-  backLinkText: {
-    
-    fontSize: 14,
-    color: '#00308F',
-    textDecorationLine: 'underline',
+    fontSize: 15,
   },
 });

@@ -1,5 +1,4 @@
-import { useFocusEffect } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,38 +6,60 @@ import {
   Image,
   StyleSheet,
   Alert,
-  BackHandler
+  BackHandler,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
+import * as SecureStore from 'expo-secure-store';
+import { useUserStore } from '../store/userStore';
 
 export default function ProfilePicture() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [userToken, setUserToken] = useState<string | null>(null);
 
+  const { user } = useUserStore();
+
+  const userId = user?.userid;
+  console.log(userId);
+
+  // Prevent hardware back button on Android
   useFocusEffect(
-      useCallback(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
-        return () => backHandler.remove();
-      }, [])
-    );
+    useCallback(() => {
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true);
+      return () => backHandler.remove();
+    }, [])
+  );
+
+  // Retrieve token from SecureStore on mount
+  useEffect(() => {
+    const getToken = async () => {
+      try {
+        const token = await SecureStore.getItemAsync('userToken');
+        if (token) {
+          setUserToken(token);
+        } else {
+          Alert.alert('No Token Found', 'Please log in again.');
+        }
+      } catch (error) {
+        console.error('Error retrieving token:', error);
+      }
+    };
+    getToken();
+  }, []);
 
   const requestPermissions = async () => {
+    // Request permission to access photos
     const mediaPermissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!mediaPermissionResult.granted) {
-      Alert.alert(
-        'Permission required',
-        'We need permission to access your camera roll.'
-      );
+      Alert.alert('Permission required', 'We need permission to access your camera roll.');
       return false;
     }
-
+    // Request permission to use camera
     const cameraPermissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (!cameraPermissionResult.granted) {
-      Alert.alert(
-        'Permission required',
-        'We need permission to access your camera.'
-      );
+      Alert.alert('Permission required', 'We need permission to access your camera.');
       return false;
     }
     return true;
@@ -51,8 +72,8 @@ export default function ProfilePicture() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true, 
-        aspect: [1, 1], 
+        allowsEditing: true,
+        aspect: [1, 1],
         quality: 1,
       });
 
@@ -66,7 +87,6 @@ export default function ProfilePicture() {
 
   const takePhotoWithCamera = async () => {
     try {
-      
       const hasPermissions = await requestPermissions();
       if (!hasPermissions) return;
 
@@ -84,16 +104,52 @@ export default function ProfilePicture() {
     }
   };
 
-  const handleSaveProfilePicture = () => {
+  const handleSaveProfilePicture = async () => {
     if (!selectedImage) {
       Alert.alert('No image selected', 'Please pick or take a photo first.');
       return;
     }
-    
-    console.log('Profile picture saved:', selectedImage);
+    if (!userToken) {
+      Alert.alert('No Token', 'Cannot upload without a valid token. Please log in again.');
+      return;
+    }
 
-    
-    router.replace('/login');
+    try {
+      // Prepare the file for multipart/form-data
+      const formData = new FormData();
+      formData.append('profile_picture', {
+        uri: selectedImage,
+        type: 'image/jpeg', // or 'image/png'
+        name: 'profile.jpg',
+      });
+
+      formData.append('userId', userId);
+
+      // Make the POST request
+      const response = await fetch('http://10.0.2.2:9000/user/profile/photo/upload', {
+        method: 'POST',
+        headers: {
+          // 'Content-Type': 'multipart/form-data' // usually omitted, let fetch handle it
+          Authorization: `Bearer ${userToken}`,
+          'X-Platform': 'mobile',
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Upload success:', data);
+      Alert.alert('Success', 'Profile picture uploaded!');
+
+      // Navigate away after success
+      router.replace('/login');
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      Alert.alert('Error', 'Could not upload profile picture. Please try again.');
+    }
   };
 
   return (
@@ -108,17 +164,11 @@ export default function ProfilePicture() {
         </View>
       )}
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={pickImageFromLibrary}
-      >
+      <TouchableOpacity style={styles.button} onPress={pickImageFromLibrary}>
         <Text style={styles.buttonText}>Pick from Library</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={takePhotoWithCamera}
-      >
+      <TouchableOpacity style={styles.button} onPress={takePhotoWithCamera}>
         <Text style={styles.buttonText}>Take a Photo</Text>
       </TouchableOpacity>
 
@@ -132,6 +182,7 @@ export default function ProfilePicture() {
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -143,7 +194,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     color: '#00308F',
-    
     marginBottom: 20,
   },
   placeholderContainer: {
@@ -159,7 +209,6 @@ const styles = StyleSheet.create({
   placeholderText: {
     fontSize: 14,
     color: '#999ea1',
-    
   },
   imagePreview: {
     width: 200,
@@ -178,16 +227,6 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#fff',
-    
     fontSize: 15,
-  },
-  backLink: {
-    marginTop: 20,
-  },
-  backLinkText: {
-    
-    fontSize: 14,
-    color: '#00308F',
-    textDecorationLine: 'underline',
   },
 });
