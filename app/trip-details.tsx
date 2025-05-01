@@ -6,12 +6,17 @@ import * as SecureStore from 'expo-secure-store';
 import { useTripStore } from '@/store/useTripStore';
 import { useUserMode } from '../store/userModeStore';
 import { useUserStore } from '../store/userStore';
+import { getOrCreateChat } from '@/helpers/chat';
+import { db } from '@/config/firebase';
+import { deleteChat } from '@/helpers/chat';
 
 export default function TripDetails() {
   const router = useRouter();
   const selectedTrip = useTripStore((state) => state.selectedTrip);
   const currentUser = useUserStore((state) => state.user);
   const { mode } = useUserMode();
+  console.log("UserID:",currentUser?.userid);
+  console.log("Selected Trip's Driver ID:",selectedTrip?.driverid);
 
   const [token, setToken] = useState<string | null>(null);
   const [tripRequests, setTripRequests] = useState<any[]>([]);
@@ -53,6 +58,7 @@ export default function TripDetails() {
       }
 
       const data = await response.json();
+      console.log(data);
       setTripRequests(data.tripRequests);
     } catch (error) {
       console.error('Error fetching trip requests:', error);
@@ -208,6 +214,15 @@ export default function TripDetails() {
               }
               const data = await response.json();
               useTripStore.setState({ selectedTrip: { ...selectedTrip, status: 'completed' } });
+              const mine = currentUser.userid.toString();
+              // for every passenger that we accepted...
+              tripRequests
+                .filter(r => r.status === 'ACCEPTED')
+                .forEach(async req => {
+                  const other = req.passenger.userId.toString();
+                  const chatId = await getOrCreateChat(mine, other);
+                  await deleteChat(chatId);
+                });
             } catch (error) {
               console.error("Error stopping trip:", error);
               Alert.alert("Error", "Could not end trip. Please try again.");
@@ -263,8 +278,18 @@ export default function TripDetails() {
                   <View key={request.requestId} style={styles.requestItem}>
                     <Text style={styles.passengerText}>{request.passenger.username}</Text>
                     <View style={styles.buttonRow}>
-                      <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
-                        <Text style={styles.buttonText}>Contact</Text>
+
+                      {/* Previous */}
+                      {/* <TouchableOpacity
+                        style={styles.contactButton}
+                        onPress={async () => {
+                          const otherId = request.passenger.userId.toString();
+                          const mine    = currentUser.userid.toString();
+                          const chatId  = await getOrCreateChat(mine, otherId);
+                          router.push({ pathname: '/chat-room', params: { chatId } });
+                        }}
+                        >
+                        <Text style={styles.buttonText}>Contact Passenger</Text>
                       </TouchableOpacity>
                       {request.status === 'PENDING' && (
                         <>
@@ -280,10 +305,41 @@ export default function TripDetails() {
                         <TouchableOpacity
                           style={styles.reviewButton}
                           onPress={() => router.push({ pathname: "/review", params: { userId: request.passenger.userId } })}
-                        >
+                          >
                           <Text style={styles.reviewButtonText}>Review</Text>
                         </TouchableOpacity>
-                      )}
+                      )} */}
+
+                      {/* New */}
+                      {selectedTrip.status !== 'completed' && (
+                             <>
+                               <TouchableOpacity style={styles.contactButton} onPress={async () => {
+                                  const otherId = request.passenger.userId.toString();
+                                  const mine    = currentUser.userid.toString();
+                                  console.log("My ID (as a driver):",mine);
+                                  console.log("Passenger ID:",otherId);
+                                  const chatId  = await getOrCreateChat(mine, otherId);
+                                  router.push({ pathname: '/chat-room', params: { chatId } });
+                                }}>
+                                 <Text style={styles.buttonText}>Contact Passenger</Text>
+                               </TouchableOpacity>
+                               {request.status === 'PENDING' && (
+                                 <>
+                                   <TouchableOpacity style={styles.acceptButton} onPress={() =>     handleAccept(request.requestId)}>
+                                     <Text style={styles.buttonText}>Accept</Text>
+                                   </TouchableOpacity>
+                                   <TouchableOpacity style={styles.rejectButton} onPress={() => handleReject(request.requestId)}>
+                                     <Text style={styles.buttonText}>Reject</Text>
+                                   </TouchableOpacity>
+                                 </>
+                               )}
+                             </>
+                           )}
+                           {selectedTrip.status === 'completed' && (
+                             <TouchableOpacity style={styles.reviewButton} onPress={() => router.push({ pathname: "/review", params: { userId: request.passenger.userId } })}>
+                               <Text style={styles.reviewButtonText}>Review</Text>
+                             </TouchableOpacity>
+                          )}
                     </View>
                   </View>
                 ))
@@ -294,8 +350,43 @@ export default function TripDetails() {
         {mode === "passenger" && (
           <View style={{ marginTop: 20 }}>
             {(selectedTrip.status === "upcoming" || selectedTrip.status === "ongoing") && (
-              <TouchableOpacity style={styles.contactButton} onPress={() => router.push('/contact-driver')}>
-                <Text style={styles.buttonText}>Contact Driver</Text>
+              <TouchableOpacity
+                style={styles.contactButton}
+                onPress={async () => {
+                  const mine    = currentUser.userid.toString();
+                  const otherId = selectedTrip.driverid;
+                  let data;
+                  console.log("My ID (as a passenger):",mine);
+                  try {
+                      const response = await fetch(`http://10.0.2.2:9000/driver/getUserId/${otherId}`, {
+                        method: "GET",
+                        headers: {
+                          "Content-Type": "application/json",
+                          "Authorization": `Bearer ${token}`,
+                          "X-Platform": "mobile",
+                        },
+                      });
+                      if (!response.ok) {
+                        throw new Error(`Failed to fetch. Status: ${response.status}`);
+                      }
+                   data = await response.json();
+                   console.log(data);
+                  }catch (error) {
+                    console.error("Error fetching:", error);
+                    
+                  }
+                  console.log(data);
+                  let userid = data?.userId;
+
+
+                  
+                  console.log("Driver ID:",userid);
+                  userid = userid.toString();
+                  const chatId  = await getOrCreateChat(mine, userid);
+                  router.push({ pathname: '/chat-room', params: { chatId } });
+                }}
+                >
+               <Text style={styles.buttonText}>Contact Driver</Text>
               </TouchableOpacity>
             )}
             {selectedTrip.status === "completed" && (

@@ -153,6 +153,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           <Text style={styles.menuText}>Settings</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigateTo('/chats-tab')}
+        >
+          <Text style={styles.menuText}>Messages</Text>
+        </TouchableOpacity>
+
         {/* Logout Button */}
         <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
