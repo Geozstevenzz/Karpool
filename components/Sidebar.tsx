@@ -17,25 +17,25 @@ import { useUserStore } from '../store/userStore';
 import { useMapStore } from '../store/mapStore';
 import * as SecureStore from 'expo-secure-store';
 
+const SIDEBAR_WIDTH = 300;
+const SWIPE_THRESHOLD = -50;
+
 interface SidebarProps {
   isVisible: boolean;
   onClose: () => void;
 }
 
-const SIDEBAR_WIDTH = 300;
-const SWIPE_THRESHOLD = -50;
-
 const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const router = useRouter();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
   const { user } = useUserStore();
+  const resetDateTime = useDateTimeStore.getState().reset;
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
-      },
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        Math.abs(gestureState.dx) > Math.abs(gestureState.dy),
       onPanResponderMove: (_, gestureState) => {
         const newPosition = Math.max(-SIDEBAR_WIDTH, Math.min(0, gestureState.dx));
         translateX.setValue(newPosition);
@@ -80,49 +80,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
     router.push(route);
   };
 
-  const resetDateTime = useDateTimeStore.getState().reset;
+  const handleLogout = async () => {
+    const confirm = Platform.OS === 'web'
+      ? window.confirm('Are you sure you want to log out?')
+      : await new Promise<boolean>((resolve) => {
+          Alert.alert('Logout', 'Are you sure you want to log out?', [
+            { text: 'Cancel', style: 'cancel', onPress: () => resolve(false) },
+            { text: 'Logout', style: 'destructive', onPress: () => resolve(true) },
+          ]);
+        });
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to log out?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await SecureStore.deleteItemAsync('token');
-              useUserStore.getState().clearUser();
-              useUserMode.getState().setMode('passenger');
-            resetDateTime();
-            useMapStore.getState().resetMapState();
-              closeSidebar();
-              router.replace('/');
-            } catch (error) {
-              console.error('Error logging out:', error);
-            }
-          },
-        },
-      ],
-      { cancelable: true }
-    );
+    if (!confirm) return;
+
+    try {
+      if (Platform.OS !== 'web') {
+        await SecureStore.deleteItemAsync('token');
+      }
+
+      useUserStore.getState().clearUser();
+      useUserMode.getState().setMode('passenger');
+      resetDateTime();
+      useMapStore.getState().resetMapState();
+
+      closeSidebar();
+      router.replace('/');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   if (!isVisible) return null;
 
   return (
     <Animated.View
-      style={[
-        styles.container,
-        {
-          transform: [{ translateX }],
-        },
-      ]}
+      style={[styles.container, { transform: [{ translateX }] }]}
       {...panResponder.panHandlers}
     >
       <View style={styles.profileSection}>
@@ -138,50 +129,37 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
       </View>
 
       <View style={styles.menuItems}>
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('/trips')}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('/trips')}>
           <Text style={styles.menuText}>My Trips</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('/settings')}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('/settings')}>
           <Text style={styles.menuText}>Settings</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('/chats-tab')}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('/chats-tab')}>
           <Text style={styles.menuText}>Messages</Text>
         </TouchableOpacity>
 
-        {/* NEW: Edit Profile */}
-        <TouchableOpacity
-          style={styles.menuItem}
-          onPress={() => navigateTo('/edit-profile')}
-        >
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('/edit-profile')}>
           <Text style={styles.menuText}>Edit Profile</Text>
         </TouchableOpacity>
 
-        {/* NEW: Edit Vehicle with Driver Check */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => {
             if (user?.isdriver) {
               navigateTo('/edit-vehicle');
             } else {
-              Alert.alert('Access Denied', 'You should be a registered driver to enter this page.');
+              Platform.OS === 'web'
+                ? window.alert('You should be a registered driver to enter this page.')
+                : Alert.alert('Access Denied', 'You should be a registered driver to enter this page.');
             }
           }}
         >
           <Text style={styles.menuText}>Edit Vehicle</Text>
         </TouchableOpacity>
 
-        {/* Logout Button */}
         <TouchableOpacity style={[styles.menuItem, styles.logoutButton]} onPress={handleLogout}>
           <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
         </TouchableOpacity>
@@ -198,13 +176,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: SIDEBAR_WIDTH,
     backgroundColor: 'white',
-    zIndex: 2,
+    zIndex: 9999,
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 2,
-      height: 0,
-    },
+    shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
