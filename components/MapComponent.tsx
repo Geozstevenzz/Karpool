@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { View, StyleSheet } from "react-native";
-import MapView, { Marker, Polyline } from "react-native-maps";
+//import MapView, { Marker, Polyline } from "react-native-maps";
 import { useMapStore } from "../store/mapStore";
 
 const mapStyle= [

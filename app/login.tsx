@@ -8,12 +8,17 @@ import {
   Image,
   Alert,
   BackHandler,
+  Platform,
+  Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as SecureStore from 'expo-secure-store';
 import { useUserStore } from '../store/userStore';
 import { useVehicleStore } from '../store/vehicleStore';
+
+const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get('window');
 
 export default function Login() {
   const router = useRouter();
@@ -23,6 +28,11 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+
+  const BASE_URL =
+    Platform.OS === 'android'
+      ? 'http://10.0.2.2:9000'
+      : 'http://localhost:9000';
 
   useEffect(() => {
     const backAction = () => {
@@ -35,9 +45,8 @@ export default function Login() {
   }, []);
 
   const handleLogin = async () => {
-
     try {
-      const response = await fetch('http://10.0.2.2:9000/user/login', {
+      const response = await fetch(`${BASE_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +54,7 @@ export default function Login() {
         body: JSON.stringify({
           email,
           password,
-          platform: 'mobile',
+          platform: Platform.OS,
         }),
       });
 
@@ -55,7 +64,11 @@ export default function Login() {
 
       const data = await response.json();
       console.log('Login successful:', data);
-      await SecureStore.setItemAsync('userToken', data.token);
+
+      if (Platform.OS !== 'web') {
+        await SecureStore.setItemAsync('userToken', String(data.token));
+      }
+
       setUser(data.user);
 
       if (data.user.vehicleid) {
@@ -78,7 +91,6 @@ export default function Login() {
         <Text style={styles.header}>Hi, Welcome Back!</Text>
       </View>
 
-      {/* Email Input */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <TextInput
@@ -90,7 +102,6 @@ export default function Login() {
         />
       </View>
 
-      {/* Password Input */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <TextInput
@@ -102,7 +113,6 @@ export default function Login() {
         />
       </View>
 
-      {/* Remember Me & Forgot Password */}
       <View style={styles.rememberMeContainer}>
         <TouchableOpacity
           onPress={() => setRememberMe(!rememberMe)}
@@ -119,19 +129,16 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-      {/* Login Button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      {/* Divider with "Or" */}
       <View style={styles.dividerContainer}>
         <View style={styles.line} />
         <Text style={styles.orText}>Or</Text>
         <View style={styles.line} />
       </View>
 
-      {/* Continue with Google */}
       <TouchableOpacity style={[styles.button, styles.googleButton]}>
         <View style={styles.googleButtonContent}>
           <Image
@@ -144,7 +151,6 @@ export default function Login() {
         </View>
       </TouchableOpacity>
 
-      {/* Signup Link */}
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account? </Text>
         <TouchableOpacity onPress={() => router.replace('/signup')}>
@@ -155,15 +161,14 @@ export default function Login() {
   );
 }
 
-
-/* -- STYLES -- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: isWeb ? 'flex-start' : 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
+    paddingTop: isWeb ? 400 : 0,
   },
   headerContainer: {
     width: '90%',
@@ -171,15 +176,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
+    right:isWeb?-200:0
   },
   header: {
-    fontSize: 24,
+    fontSize: isWeb ? 32 : 24,
     color: '#00308F',
     marginLeft: 10,
+    fontWeight: 'bold',
   },
   inputContainer: {
     width: '90%',
     marginBottom: 15,
+    right:isWeb?-200:0
   },
   label: {
     fontSize: 13,
@@ -188,15 +196,17 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   input: {
-    width: '100%',
-    height: 33,
+    width: isWeb? '80%':'100%',
+    height: isWeb ? 40 : 33,
     borderColor: '#999ea1',
     borderWidth: 1,
     borderRadius: 8,
-    paddingLeft: 11,
+    paddingLeft: isWeb?11:11,
     color: '#00308F',
     backgroundColor: '#FFFFFF',
     textAlign: 'left',
+    fontSize: isWeb ? 16 : 14,
+    
   },
   rememberMeContainer: {
     width: '90%',
@@ -204,10 +214,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginVertical: 10,
+    right:isWeb?140:0
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    
   },
   checkbox: {
     width: 18,
@@ -219,25 +231,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
+    right:isWeb?-340:0
   },
   rememberMeText: {
     fontSize: 13,
     color: '#00308F',
+    right:isWeb?-340:0
   },
   forgotPasswordText: {
     fontSize: 13,
     color: '#FB344F',
   },
   button: {
-    width: '90%',
+    width: isWeb ? 300 : '90%',
     backgroundColor: '#00308F',
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 17,
   },
   buttonText: {
-    fontSize: 15,
+    fontSize: 16,
     color: '#FFFFFF',
   },
   dividerContainer: {
@@ -288,5 +302,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-
-export default Login;

@@ -1,6 +1,19 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, BackHandler, Alert } from 'react-native';
-import { useRouter, usePathname } from 'expo-router'; 
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  BackHandler,
+  Alert,
+  Platform,
+  Dimensions,
+} from 'react-native';
+import { useRouter, usePathname } from 'expo-router';
+
+const isWeb = Platform.OS === 'web';
+const { width, height } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -9,14 +22,10 @@ export default function HomeScreen() {
   useEffect(() => {
     const handleBackPress = () => {
       if (pathname === '/') {
-        Alert.alert(
-          'Exit App',
-          'Are you sure you want to exit?',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Exit', onPress: () => BackHandler.exitApp() },
-          ]
-        );
+        Alert.alert('Exit App', 'Are you sure you want to exit?', [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Exit', onPress: () => BackHandler.exitApp() },
+        ]);
         return true;
       } else {
         router.back();
@@ -30,30 +39,28 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.circle} />
-      <Image source={require('@/assets/images/bmw.webp')} style={styles.image} />
-
-      <View style={styles.textContainer}>
-        <Text style={styles.text}>Karpool</Text>
-        <Image source={require('@/assets/images/people-in-car.png')} style={styles.carImage} />
+      {/* Header Section */}
+      <View style={styles.headerContainer}>
+        <Text style={styles.text}>Karpool.</Text>
+        <Text style={styles.subtext}>Get rid of transportation problems!</Text>
       </View>
 
-      <Text style={styles.subtext}>Get rid of transportation problems!</Text>
-      <Text style={styles.footer}>Let's get started.</Text>
+      {/* Car Image Section */}
+      <View style={styles.imageContainer}>
+        <View style={styles.oval} />
+        <Image source={require('@/assets/images/bmw.webp')} style={styles.image} />
+      </View>
 
-      <TouchableOpacity 
-        style={[styles.button, styles.loginButton]} 
-        onPress={() => router.replace('/login')} 
-      >
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity 
-        style={[styles.button, styles.signupButton]} 
-        onPress={() => router.replace('/signup')}
-      >
-        <Text style={styles.buttonText}>Signup</Text>
-      </TouchableOpacity>
+      {/* Buttons Section */}
+      <View style={styles.buttonGroup}>
+        <Text style={styles.footer}>Let's get started.</Text>
+        <TouchableOpacity style={styles.button} onPress={() => router.replace('/login')}>
+          <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => router.replace('/signup')}>
+          <Text style={styles.buttonText}>Signup</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -62,73 +69,67 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#00308F',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: isWeb ? 80 : 40,
+    paddingBottom: isWeb ? 80 : 40,
+  },
+  headerContainer: {
+    alignItems: 'flex-start',
+    width: '90%',
+  },
+  text: {
+    fontSize: isWeb ? 60 : 28,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    top: isWeb? 200: 0,
+  },
+  subtext: {
+    fontSize: isWeb ? 48 : 16,
+    color: '#FFFFFF',
+    marginTop: 10,
+    top:isWeb? 250: 0,
+    
+  },
+  imageContainer: {
+    position: 'relative',
+    width: isWeb ? 600 : 320,
+    height: isWeb ? 300 : 220,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  circle: {
-    width: 360,
-    height: 350,
-    borderRadius: 175,
+  oval: {
+    width: isWeb ? 1000 : 400,
+    height: isWeb ? 1000 : 400,
+    borderRadius: isWeb ? 500 : 200,
     backgroundColor: '#1485EE',
     position: 'absolute',
-    top: 170,
-    left: 120,
+    right: isWeb ? -1000 : -150,
   },
   image: {
-    width: 600,
-    height: 250,
-    position: 'absolute',
-    top: 230,
-    left: 40,
+    width: isWeb ? 1000 : 700,
+    height: isWeb ? 1000 : 700,
+    resizeMode: 'contain',
     transform: [{ scaleX: -1 }],
+    marginLeft: isWeb ? 1700 : 300,
   },
-  textContainer: {
-    flexDirection: 'row',
+  buttonGroup: {
+    width: '100%',
     alignItems: 'center',
-    position: 'absolute',
-    top: 50,
-    left: 20,
-  },
-  text: {
-    fontSize: 32,
-    color: '#FFFFFF',
-  },
-  carImage: {
-    width: 7,
-    height: 7,
-    marginLeft: 2,
-    top: 11,
-  },
-  subtext: {
-    fontSize: 24,
-    color: '#FFFFFF',
-    position: 'absolute',
-    top: 560,
-    left: 20,
   },
   footer: {
     fontSize: 18,
     color: '#FFFFFF',
-    position: 'absolute',
-    bottom: 200,
-    left: 20,
     fontWeight: '600',
+    marginBottom: 20,
   },
   button: {
-    width: '70%',
+    width: isWeb ? 300 : '70%',
     backgroundColor: '#FFFFFF',
     paddingVertical: 12,
     borderRadius: 25,
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  loginButton: {
-    position: 'absolute',
-    bottom: 110,
-  },
-  signupButton: {
-    position: 'absolute',
-    bottom: 40,
+    marginVertical: 8,
   },
   buttonText: {
     fontSize: 20,

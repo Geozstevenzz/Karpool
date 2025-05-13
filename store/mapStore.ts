@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { LatLng } from "react-native-maps";
+//import { LatLng } from "react-native-maps";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Bookmark = {
