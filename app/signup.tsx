@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   Alert,
+  Platform,
   BackHandler,
   ScrollView,
 } from 'react-native';
@@ -14,6 +15,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useUserStore } from '../store/userStore';
+
+const isWeb = Platform.OS === 'web';
 
 export default function Signup() {
   const router = useRouter();
@@ -173,14 +176,29 @@ export default function Signup() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFFFFF', paddingHorizontal: 20 },
   scrollContainer: { alignItems: 'center', paddingBottom: 50, paddingTop: 10 },
-  headerContainer: { width: '90%', alignItems: 'flex-start', marginTop: 50, marginBottom: 15, flexDirection: 'row' },
+  headerContainer: { width: '90%', alignItems: 'flex-start', marginTop: 50, marginBottom: 15, flexDirection: 'row', right:isWeb?-200:0 },
   header: { fontSize: 24, color: '#00308F', marginLeft: 10 },
-  inputContainer: { width: '90%', marginBottom: 11 },
+  inputContainer: { width: '90%', marginBottom: 11, right:isWeb?-200:0 },
   label: { fontSize: 13, color: '#00308F', marginBottom: 3, marginLeft: 5 },
-  input: { width: '100%', height: 33, borderColor: '#999ea1', borderWidth: 1, borderRadius: 8, paddingLeft: 11, color: '#00308F', backgroundColor: '#FFFFFF' },
-  pickerContainer: { borderWidth: 1, borderColor: '#999ea1', borderRadius: 8, backgroundColor: '#FFFFFF', height: 33, justifyContent: 'center', paddingHorizontal: 5 },
-  picker: { color: '#00308F' },
-  button: { width: '90%', backgroundColor: '#00308F', paddingVertical: 8, borderRadius: 10, alignItems: 'center', marginTop: 17 },
+  input: { width: isWeb? '80%':'100%', height: isWeb ? 40 : 33, borderColor: '#999ea1', borderWidth: 1, borderRadius: 8, paddingLeft: 11, color: '#00308F', backgroundColor: '#FFFFFF' },
+  pickerContainer: {
+  width: isWeb ? '80%' : '100%',
+  height: isWeb ? 40 : 33,
+  borderColor: '#999ea1',
+  borderWidth: 1,
+  borderRadius: 8,
+  paddingHorizontal: 11,
+  justifyContent: 'center',
+  backgroundColor: '#FFFFFF',
+},
+
+  picker: {
+  width: '100%',
+  height: '100%',
+  color: '#00308F',
+},
+
+  button: { width: isWeb ? 300 : '90%', backgroundColor: '#00308F', paddingVertical: 8, borderRadius: 10, alignItems: 'center', marginTop: 17 },
   buttonText: { fontSize: 15, color: '#FFFFFF' },
   googleButton: { backgroundColor: '#FFFFFF', borderColor: '#00308f', borderWidth: 1, marginTop: 9 },
   googleButtonContent: { flexDirection: 'row', alignItems: 'center' },
@@ -192,12 +210,46 @@ const styles = StyleSheet.create({
   loginContainer: { flexDirection: 'row', marginTop: 17, marginBottom: 20 },
   loginText: { fontSize: 13, color: '#999ea1' },
   loginLink: { fontSize: 13, color: '#00308f', textDecorationLine: 'underline' },
-  interestBox: { borderWidth: 1, borderColor: '#999ea1', borderRadius: 8, padding: 5, minHeight: 33, flexWrap: 'wrap', flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', zIndex: 10, position: 'relative' },
-  selectedTagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
+  interestBox: {
+  width: isWeb ? '80%' : '100%',
+  height: isWeb ? 40 : 33,
+  borderWidth: 1,
+  borderColor: '#999ea1',
+  borderRadius: 8,
+  paddingHorizontal: 11,
+  backgroundColor: '#FFFFFF',
+  justifyContent: 'center',
+},
+
+  selectedTagsContainer: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 5,
+},
+
   tag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#00308F', borderRadius: 15, paddingHorizontal: 8, paddingVertical: 4, margin: 2 },
   tagText: { color: '#FFFFFF', marginRight: 5 },
   removeTag: { color: '#FFFFFF', fontWeight: 'bold' },
-  dropdownWrapperContainer: { position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#999ea1', borderRadius: 8, maxHeight: 150, zIndex: 999, elevation: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4 },
+  dropdownWrapperContainer: {
+  position: 'absolute',
+  top: isWeb ? 42 : 35,
+  left: 0,
+  right: 0,
+  width: isWeb ? '80%' : '100%',
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#999ea1',
+  borderRadius: 8,
+  maxHeight: 150,
+  zIndex: 999,
+  elevation: 5,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.1,
+  shadowRadius: 4,
+},
+
   dropdown: { maxHeight: 150 },
   dropdownItem: { paddingVertical: 6, paddingHorizontal: 10, borderBottomWidth: 0.5, borderBottomColor: '#ccc' },
 });

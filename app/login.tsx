@@ -164,11 +164,11 @@ export default function Login() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: isWeb ? 'flex-start' : 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#FFFFFF',
     paddingHorizontal: 20,
-    paddingTop: isWeb ? 400 : 0,
+    paddingTop:  0,
   },
   headerContainer: {
     width: '90%',
