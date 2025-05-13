@@ -29,7 +29,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
   const router = useRouter();
   const translateX = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
   const { user } = useUserStore();
-  //console.log("User Photo:",user?.profile_photo);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -158,6 +157,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, onClose }) => {
           onPress={() => navigateTo('/chats-tab')}
         >
           <Text style={styles.menuText}>Messages</Text>
+        </TouchableOpacity>
+
+        {/* NEW: Edit Profile */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigateTo('/edit-profile')}
+        >
+          <Text style={styles.menuText}>Edit Profile</Text>
+        </TouchableOpacity>
+
+        {/* NEW: Edit Vehicle with Driver Check */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => {
+            if (user?.isdriver) {
+              navigateTo('/edit-vehicle');
+            } else {
+              Alert.alert('Access Denied', 'You should be a registered driver to enter this page.');
+            }
+          }}
+        >
+          <Text style={styles.menuText}>Edit Vehicle</Text>
         </TouchableOpacity>
 
         {/* Logout Button */}
