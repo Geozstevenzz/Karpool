@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Dimensions, Image, FlatList, Pressable, Alert }
 import MapComponent from '../../components/MapComponent';
 import TopBar from '../../components/topBar';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-//import MapView, { Polyline, Marker } from 'react-native-maps';
+import MapView, { Polyline, Marker } from 'react-native-maps';
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 

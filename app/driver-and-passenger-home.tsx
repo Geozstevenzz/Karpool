@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, Alert, Button, Animated, BackHandler } from 're
 import { useRouter } from 'expo-router';
 import LocationPicker from '../components/LocationPicker';
 import DateTimePicker from '../components/DatePickerComponent';
-//import MapComponent from '../components/MapComponent';
+import MapComponent from '../components/MapComponent';
 import TopBar from '../components/topBar';
 import Sidebar from '../components/Sidebar';
 import { useUserMode } from '../store/userModeStore';
@@ -164,7 +164,7 @@ const DriverOrPassengerHome: React.FC = () => {
       {/* Main content */}
       <View style={[styles.content, isSidebarVisible && styles.contentBlurred]} 
             pointerEvents={isSidebarVisible ? 'none' : 'auto'}>
-        {/*<MapComponent />*/}
+        {<MapComponent />}
         <View style={styles.bottomView}>
           <Text style={styles.text}>
             {currentMode === 'driver' ? 'Schedule a trip:' : 'Find a trip:'}

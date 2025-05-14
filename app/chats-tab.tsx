@@ -1,4 +1,3 @@
-// app/chats-tab.tsx
 import React, { useEffect, useState } from 'react';
 import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';

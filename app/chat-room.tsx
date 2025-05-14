@@ -1,4 +1,3 @@
-// app/chat-room.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View, TextInput, TouchableOpacity, FlatList, Text, StyleSheet
